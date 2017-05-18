@@ -1,167 +1,195 @@
 #include <Tic.h>
 
-void Tic::enableDriver(void)
+/*** TicBase ***/
+
+uint16_t TicBase::getAnalogReading(TicPin pin)
 {
-  beginCommand(CmdEnableDriver);
-  endWrite();
+  uint8_t offset = VarOffset::AnalogReadingSCL + 2 * (uint8_t)pin;
+  return getVar16(offset);
 }
 
-void Tic::disableDriver(void)
-{
-  beginCommand(CmdDisableDriver);
-  endWrite();
+uint8_t TicBase::getDigitalReading(TicPin pin)
+{ 
+  uint8_t readings = getVar8(VarOffset::DigitalReadings);
+  return (readings >> (uint8_t)pin) & 1;
 }
 
-void Tic::setTargetPosition(int32_t position)
+uint8_t TicBase::getPinState(TicPin pin)
 {
-  beginCommand(CmdSetTargetPosition);
-  write32Bit((uint32_t)position);
-  endWrite();
+  uint8_t states = getVar8(VarOffset::PinStates);
+  return (states >> (2 * (uint8_t)pin)) & 0b11;
 }
 
-void Tic::setTargetVelocity(int32_t velocity)
+
+/*** TicSerial ***/
+
+void TicSerial::commandW32(TicCommand cmd, uint32_t val)
 {
-  if (velocity >  50000000) { velocity =  50000000; }
-  if (velocity < -50000000) { velocity = -50000000; }
+  sendCommandHeader(cmd);
   
-  beginCommand(CmdSetTargetVelocity);
-  write32Bit((uint32_t)velocity);
-  endWrite();
-}
-
-void Tic::setSpeedMin(uint32_t speed)
-{
-  if (speed > 50000000) { speed =  50000000; }
-  
-  beginCommand(CmdSetSpeedMin);
-  write32Bit((uint32_t)speed);
-  endWrite();
-}
-
-void Tic::setSpeedMax(uint32_t speed)
-{
-  if (speed > 50000000) { speed =  50000000; }
-  
-  beginCommand(CmdSetSpeedMax);
-  write32Bit((uint32_t)speed);
-  endWrite();
-}
-
-void Tic::setDecelMax(uint32_t decel)
-{
-  if (decel != 0 && decel < 100) { decel = 100; }
-  if (decel > 0x7FFFFFFF) { decel = 0x7FFFFFFF; }
-  
-  beginCommand(CmdSetDecelMax);
-  write32Bit((uint32_t)decel);
-  endWrite();
-}
-
-void Tic::setAccelMax(uint32_t accel)
-{
-  if (accel < 100) { accel = 100; }
-  if (accel > 0x7FFFFFFF) { accel = 0x7FFFFFFF; }
-  
-  beginCommand(CmdSetAccelMax);
-  write32Bit((uint32_t)accel);
-  endWrite();
-}
-
-void Tic::setCurrentLimit(uint8_t limit)
-{
-  if (limit > 124) { limit = 124; }
-  
-  beginCommand(CmdSetCurrentLimit);
-  write8Bit(limit);
-  endWrite();
-}
-
-void Tic::setCurrentLimitMilliamps(uint16_t limit_mA)
-{
-  // TODO
-}
-
-void Tic::setDecayMode(DecayMode mode)
-{
-  // TODO should this check bounds of enum? e.g. tic.setDecayMode(4);
-  
-  beginCommand(CmdSetDecayMode);
-  write8Bit(mode);
-  endWrite();
-}
-
-void Tic::setMicrosteppingMode(MicrosteppingMode mode)
-{
-  // TODO check enum?
-  
-  beginCommand(CmdSetDecayMode);
-  write8Bit(mode);
-  endWrite();
-}
-
-void Tic::setPin(Pin pin, PinState state)
-{
-  // TODO check enum?
-  beginCommand(CmdSetDecayMode);
-  write8Bit(pin);
-  write8Bit(state);
-  endWrite();
-}
-
-void Tic::resetCommandTimeout(void)
-{
-  beginCommand(CmdResetCommandTimeout);
-  endWrite();
-}
-
-/*void Tic::GetVariable(void)
-{
-  
-}*/
-
-void TicSerial::beginCommand(Command cmd)
-{
-  if (_protocol == ProtocolCompact)
-  {
-    write8Bit(cmd);
-  }
-  else
-  {
-    write8Bit(0xAA);
-    write8Bit(_deviceNum);
-    write8Bit(cmd & 0x7F);
-  }
-}
-
-void TicSerial::write32Bit(uint32_t val)
-{
   /* byte with MSbs:
   bit 0 = MSb of first (least significant) data byte 
   bit 1 = MSb of second data byte
   bit 2 = MSb of third data byte
   bit 3 = MSb of fourth (most significant) data byte
   */
-  write8Bit(((val >>  7) & 1) |
-                 ((val >> 14) & 2) |
-                 ((val >> 21) & 4) |
-                 ((val >> 28) & 8));
+  serialW7(((val >>  7) & 1) |
+           ((val >> 14) & 2) |
+           ((val >> 21) & 4) |
+           ((val >> 28) & 8));
 
-  write8Bit( val        & 0x7F); // least significant byte with MSb cleared
-  write8Bit((val >>  8) & 0x7F);
-  write8Bit((val >> 16) & 0x7F);
-  write8Bit((val >> 24) & 0x7F); // most significant byte with MSb cleared
+  serialW7(val      ); // least significant byte with MSb cleared
+  serialW7(val >>  8);
+  serialW7(val >> 16);
+  serialW7(val >> 24); // most significant byte with MSb cleared
 }
 
-void TicI2C::beginCommand(Command cmd)
+void TicSerial::commandW7(TicCommand cmd, uint8_t val)
 {
-  Wire.beginTransmission(_addr);
-  Wire.write(cmd);
+  sendCommandHeader(cmd);
+  serialW7(val);
 }
 
-void TicI2C::write32Bit(uint32_t val)
+void TicSerial::commandW2x7(TicCommand cmd, uint8_t val1, uint8_t val2)
 {
-  write8Bit( val        & 0xFF); // least significant byte
-  write8Bit((val >>  8) & 0xFF);
-  write8Bit((val >> 16) & 0xFF);
-  write8Bit((val >> 24) & 0xFF); // most significant byte
+  sendCommandHeader(cmd);
+  serialW7(val1);
+  serialW7(val2);
+}
+
+uint8_t TicSerial::getVar8(uint8_t offset)
+{
+  sendCommandHeader(TicCommand::GetVariable);
+  serialW7(offset);
+  serialW7(1);
+  while (_stream->available() < 1) {}
+  return _stream->read();
+}
+
+uint16_t TicSerial::getVar16(uint8_t offset)
+{
+  uint16_t val;
+  
+  sendCommandHeader(TicCommand::GetVariable);
+  serialW7(offset);
+  serialW7(2);
+  while (_stream->available() < 2) {}
+  val  =           _stream->read();       // low byte
+  val |= (uint16_t)_stream->read() << 8;  // high byte
+  return val;
+}
+
+uint32_t TicSerial::getVar32(uint8_t offset)
+{
+  uint32_t val;
+  
+  sendCommandHeader(TicCommand::GetVariable);
+  serialW7(offset);
+  serialW7(4);
+  while (_stream->available() < 4) {}
+  val  =           _stream->read();       // lowest byte
+  val |= (uint16_t)_stream->read() <<  8;
+  val |= (uint32_t)_stream->read() << 16;
+  val |= (uint32_t)_stream->read() << 24; // highest byte
+  return val;
+}
+
+void TicSerial::sendCommandHeader(TicCommand cmd)
+{
+  if (_deviceNumber == 255)
+  {
+    // compact protocol
+    _stream->write((uint8_t)cmd);
+  }
+  else
+  {
+    // Pololu protocol
+    _stream->write(0xAA);
+    serialW7(_deviceNumber);
+    serialW7((uint8_t)cmd);
+  }
+}
+
+
+/*** TicI2C ***/
+
+void TicI2C::commandQuick(TicCommand cmd)
+{
+  Wire.beginTransmission(_address);
+  Wire.write((uint8_t)cmd);
+  Wire.endTransmission();
+}
+
+void TicI2C::commandW32(TicCommand cmd, uint32_t val)
+{
+  Wire.beginTransmission(_address);
+  Wire.write((uint8_t)cmd);
+  Wire.write(val      ); // lowest byte
+  Wire.write(val >>  8);
+  Wire.write(val >> 16);
+  Wire.write(val >> 24); // highest byte
+  Wire.endTransmission();
+}
+
+void TicI2C::commandW7(TicCommand cmd, uint8_t val)
+{
+  Wire.beginTransmission(_address);
+  Wire.write((uint8_t)cmd);
+  Wire.write(val & 0x7F);
+  Wire.endTransmission();
+}
+
+void TicI2C::commandW2x7(TicCommand cmd, uint8_t val1, uint8_t val2)
+{
+  Wire.beginTransmission(_address);
+  Wire.write((uint8_t)cmd);
+  Wire.write(val1 & 0x7F);
+  Wire.write(val2 & 0x7F);
+  Wire.endTransmission();
+}
+
+uint8_t TicI2C::getVar8(uint8_t offset)
+{
+  uint8_t val;
+  
+  Wire.beginTransmission(_address);
+  Wire.write((uint8_t)TicCommand::GetVariable);
+  Wire.write(offset & 0x7F);
+  Wire.endTransmission(false); // repeated start
+  Wire.requestFrom(_address, (uint8_t)1);
+  val = Wire.read();
+  Wire.endTransmission();
+  return val;
+}
+
+uint16_t TicI2C::getVar16(uint8_t offset)
+{
+  uint16_t val;
+  
+  Wire.beginTransmission(_address);
+  Wire.write((uint8_t)TicCommand::GetVariable);
+  Wire.write(offset & 0x7F);
+  Wire.endTransmission(false); // repeated start
+  Wire.requestFrom(_address, (uint8_t)2);
+  val  =           Wire.read();       // low byte
+  val |= (uint16_t)Wire.read() << 8;  // high byte
+  Wire.endTransmission();
+  return val;
+}
+
+uint32_t TicI2C::getVar32(uint8_t offset)
+{
+  uint32_t val;
+  
+  Wire.beginTransmission(_address);
+  Wire.write((uint8_t)TicCommand::GetVariable);
+  Wire.write(offset & 0x7F);
+  Wire.endTransmission(false); // repeated start
+  Wire.requestFrom(_address, (uint8_t)4);
+  val  =           Wire.read();       // lowest byte
+  val |= (uint16_t)Wire.read() <<  8;
+  val |= (uint32_t)Wire.read() << 16;
+  val |= (uint32_t)Wire.read() << 24; // highest byte
+  Wire.endTransmission();
+  return val;
 }
