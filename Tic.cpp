@@ -57,6 +57,13 @@ void TicSerial::commandW2x7(TicCommand cmd, uint8_t val1, uint8_t val2)
   serialW7(val2);
 }
 
+uint8_t TicSerial::commandR8(TicCommand cmd)
+{
+  sendCommandHeader(cmd);
+  while (_stream->available() < 1) {}
+  return _stream->read();
+}
+
 uint8_t TicSerial::getVar8(uint8_t offset)
 {
   sendCommandHeader(TicCommand::GetVariable);
@@ -79,11 +86,18 @@ uint16_t TicSerial::getVar16(uint8_t offset)
   return val;
 }
 
-uint32_t TicSerial::getVar32(uint8_t offset)
+uint32_t TicSerial::getVar32(uint8_t offset, bool clear)
 {
   uint32_t val;
   
-  sendCommandHeader(TicCommand::GetVariable);
+  if (clear)
+  {
+    sendCommandHeader(TicCommand::GetVariableAndClearErrorsOccurred);
+  }
+  else
+  {
+    sendCommandHeader(TicCommand::GetVariable);
+  }
   serialW7(offset);
   serialW7(4);
   while (_stream->available() < 4) {}
@@ -92,6 +106,27 @@ uint32_t TicSerial::getVar32(uint8_t offset)
   val |= (uint32_t)_stream->read() << 16;
   val |= (uint32_t)_stream->read() << 24; // highest byte
   return val;
+}
+
+void TicSerial::getSetting(uint8_t offset, uint8_t length, uint8_t * const buf)
+{
+  uint8_t count = 0;
+  uint8_t * ptr = buf;
+  
+  length &= 0x7F; // serialW7 will only send 7 bit value anyway, but make sure
+                  // the receive loop doesn't wait for >127 bytes later
+                  // TODO: probably stricter length constraint
+  
+  sendCommandHeader(TicCommand::GetSetting);
+  serialW7(offset);
+  serialW7(length);
+  
+  while (count < length)
+  {
+    while (_stream->available() < 1) {}
+    *ptr = _stream->read();
+    ptr++;
+  }
 }
 
 void TicSerial::sendCommandHeader(TicCommand cmd)
@@ -148,6 +183,19 @@ void TicI2C::commandW2x7(TicCommand cmd, uint8_t val1, uint8_t val2)
   Wire.endTransmission();
 }
 
+uint8_t TicI2C::commandR8(TicCommand cmd)
+{
+  uint8_t val;
+  
+  Wire.beginTransmission(_address);
+  Wire.write((uint8_t)cmd);
+  Wire.endTransmission(false); // no stop (repeated start)
+  Wire.requestFrom(_address, (uint8_t)1);
+  val = Wire.read();
+  Wire.endTransmission();
+  return val;
+}
+
 uint8_t TicI2C::getVar8(uint8_t offset)
 {
   uint8_t val;
@@ -155,7 +203,7 @@ uint8_t TicI2C::getVar8(uint8_t offset)
   Wire.beginTransmission(_address);
   Wire.write((uint8_t)TicCommand::GetVariable);
   Wire.write(offset & 0x7F);
-  Wire.endTransmission(false); // repeated start
+  Wire.endTransmission(false); // no stop (repeated start)
   Wire.requestFrom(_address, (uint8_t)1);
   val = Wire.read();
   Wire.endTransmission();
@@ -169,7 +217,7 @@ uint16_t TicI2C::getVar16(uint8_t offset)
   Wire.beginTransmission(_address);
   Wire.write((uint8_t)TicCommand::GetVariable);
   Wire.write(offset & 0x7F);
-  Wire.endTransmission(false); // repeated start
+  Wire.endTransmission(false); // no stop (repeated start)
   Wire.requestFrom(_address, (uint8_t)2);
   val  =           Wire.read();       // low byte
   val |= (uint16_t)Wire.read() << 8;  // high byte
@@ -177,14 +225,21 @@ uint16_t TicI2C::getVar16(uint8_t offset)
   return val;
 }
 
-uint32_t TicI2C::getVar32(uint8_t offset)
+uint32_t TicI2C::getVar32(uint8_t offset, bool clear)
 {
   uint32_t val;
   
   Wire.beginTransmission(_address);
-  Wire.write((uint8_t)TicCommand::GetVariable);
+  if (clear)
+  {
+    Wire.write((uint8_t)TicCommand::GetVariableAndClearErrorsOccurred);
+  }
+  else
+  {
+    Wire.write((uint8_t)TicCommand::GetVariable);
+  }
   Wire.write(offset & 0x7F);
-  Wire.endTransmission(false); // repeated start
+  Wire.endTransmission(false); // no stop (repeated start)
   Wire.requestFrom(_address, (uint8_t)4);
   val  =           Wire.read();       // lowest byte
   val |= (uint16_t)Wire.read() <<  8;
@@ -192,4 +247,23 @@ uint32_t TicI2C::getVar32(uint8_t offset)
   val |= (uint32_t)Wire.read() << 24; // highest byte
   Wire.endTransmission();
   return val;
+}
+
+void TicI2C::getSetting(uint8_t offset, uint8_t length, uint8_t * const buf)
+{
+  uint8_t count = 0;
+  uint8_t * ptr = buf;
+  
+  Wire.beginTransmission(_address);
+  Wire.write((uint8_t)TicCommand::GetSetting);
+  Wire.write(offset);
+  Wire.write(length);
+  Wire.endTransmission(false); // no stop (repeated start)
+  Wire.requestFrom(_address, (uint8_t)length);
+  
+  while (count < length && Wire.available())
+  {
+    *ptr = Wire.read();
+    ptr++;
+  }
 }
