@@ -76,7 +76,7 @@ uint8_t TicSerial::getVar8(uint8_t offset)
 uint16_t TicSerial::getVar16(uint8_t offset)
 {
   uint16_t val;
-  
+
   sendCommandHeader(TicCommand::GetVariable);
   serialW7(offset);
   serialW7(2);
@@ -86,18 +86,11 @@ uint16_t TicSerial::getVar16(uint8_t offset)
   return val;
 }
 
-uint32_t TicSerial::getVar32(uint8_t offset, bool clear)
+uint32_t TicSerial::getVar32(uint8_t offset)
 {
   uint32_t val;
-  
-  if (clear)
-  {
-    sendCommandHeader(TicCommand::GetVariableAndClearErrorsOccurred);
-  }
-  else
-  {
-    sendCommandHeader(TicCommand::GetVariable);
-  }
+
+  sendCommandHeader(TicCommand::GetVariable);
   serialW7(offset);
   serialW7(4);
   while (_stream->available() < 4) {}
@@ -202,7 +195,7 @@ uint8_t TicI2C::getVar8(uint8_t offset)
   
   Wire.beginTransmission(_address);
   Wire.write((uint8_t)TicCommand::GetVariable);
-  Wire.write(offset & 0x7F);
+  Wire.write(offset);
   Wire.endTransmission(false); // no stop (repeated start)
   Wire.requestFrom(_address, (uint8_t)1);
   val = Wire.read();
@@ -216,7 +209,7 @@ uint16_t TicI2C::getVar16(uint8_t offset)
   
   Wire.beginTransmission(_address);
   Wire.write((uint8_t)TicCommand::GetVariable);
-  Wire.write(offset & 0x7F);
+  Wire.write(offset);
   Wire.endTransmission(false); // no stop (repeated start)
   Wire.requestFrom(_address, (uint8_t)2);
   val  =           Wire.read();       // low byte
@@ -225,20 +218,13 @@ uint16_t TicI2C::getVar16(uint8_t offset)
   return val;
 }
 
-uint32_t TicI2C::getVar32(uint8_t offset, bool clear)
+uint32_t TicI2C::getVar32(uint8_t offset)
 {
   uint32_t val;
-  
+
   Wire.beginTransmission(_address);
-  if (clear)
-  {
-    Wire.write((uint8_t)TicCommand::GetVariableAndClearErrorsOccurred);
-  }
-  else
-  {
-    Wire.write((uint8_t)TicCommand::GetVariable);
-  }
-  Wire.write(offset & 0x7F);
+  Wire.write((uint8_t)TicCommand::GetVariable);
+  Wire.write(offset);
   Wire.endTransmission(false); // no stop (repeated start)
   Wire.requestFrom(_address, (uint8_t)4);
   val  =           Wire.read();       // lowest byte
