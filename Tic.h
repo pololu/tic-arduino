@@ -283,6 +283,16 @@ public:
     return getVar32(VarOffset::CurrentVelocity);
   }
 
+  uint32_t getTimeSinceLastStep()
+  {
+    return getVar32(VarOffset::TimeSinceLastStep);
+  }
+
+  uint32_t getActingTargetPosition()
+  {
+    return getVar32(VarOffset::ActingTargetPosition);
+  }
+
   uint8_t getDeviceReset()
   {
     return getVar8(VarOffset::DeviceReset);
@@ -366,6 +376,16 @@ public:
     getSegment(TicCommand::GetSetting, offset, length, buffer);
   }
 
+  // Returns 0 if the last command was successful and non-zero if the last
+  // command had an error.
+  uint8_t getLastError()
+  {
+    return _lastError;
+  }
+
+protected:
+  uint8_t _lastError = 0;
+
 private:
   enum VarOffset
   {
@@ -431,7 +451,6 @@ private:
   virtual void commandQuick(TicCommand cmd) = 0;
   virtual void commandW32(TicCommand cmd, uint32_t val) = 0;
   virtual void commandW7(TicCommand cmd, uint8_t val) = 0;
-  virtual uint8_t commandR8(TicCommand cmd) = 0;
   virtual void getSegment(TicCommand cmd, uint8_t offset,
     uint8_t length, void * buffer);
 };
@@ -480,7 +499,6 @@ private:
   void commandQuick(TicCommand cmd);
   void commandW32(TicCommand cmd, uint32_t val);
   void commandW7(TicCommand cmd, uint8_t val);
-  uint8_t commandR8(TicCommand cmd);
   void getSegment(TicCommand cmd, uint8_t offset,
     uint8_t length, void * buffer);
 };

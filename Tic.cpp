@@ -16,23 +16,20 @@ void TicSerial::commandW32(TicCommand cmd, uint32_t val)
            ((val >> 21) & 4) |
            ((val >> 28) & 8));
 
-  serialW7(val      ); // least significant byte with MSb cleared
-  serialW7(val >>  8);
+  serialW7(val >> 0); // least significant byte with MSb cleared
+  serialW7(val >> 8);
   serialW7(val >> 16);
   serialW7(val >> 24); // most significant byte with MSb cleared
+
+  _lastError = 0;
 }
 
 void TicSerial::commandW7(TicCommand cmd, uint8_t val)
 {
   sendCommandHeader(cmd);
   serialW7(val);
-}
 
-uint8_t TicSerial::commandR8(TicCommand cmd)
-{
-  sendCommandHeader(cmd);
-  while (_stream->available() < 1) {}
-  return _stream->read();
+  _lastError = 0;
 }
 
 void TicSerial::getSegment(TicCommand cmd, uint8_t offset,
@@ -43,12 +40,14 @@ void TicSerial::getSegment(TicCommand cmd, uint8_t offset,
   serialW7(offset);
   serialW7(length);
 
-  uint8_t * ptr = buffer;
-  for (uint8_t i = 0; i < length; i++)
+  uint8_t byteCount = _stream->readBytes((uint8_t *)buffer, length);
+  if (byteCount != length)
   {
-    while (_stream->available() < 1) {}
-    *ptr++ = _stream->read();
+    _lastError = 50;
+    return;
   }
+
+  _lastError = 0;
 }
 
 void TicSerial::sendCommandHeader(TicCommand cmd)
@@ -65,6 +64,7 @@ void TicSerial::sendCommandHeader(TicCommand cmd)
     serialW7(_deviceNumber);
     serialW7((uint8_t)cmd);
   }
+  _lastError = 0;
 }
 
 /*** TicI2C ***/
@@ -73,18 +73,18 @@ void TicI2C::commandQuick(TicCommand cmd)
 {
   Wire.beginTransmission(_address);
   Wire.write((uint8_t)cmd);
-  Wire.endTransmission();
+  _lastError = Wire.endTransmission();
 }
 
 void TicI2C::commandW32(TicCommand cmd, uint32_t val)
 {
   Wire.beginTransmission(_address);
   Wire.write((uint8_t)cmd);
-  Wire.write(val      ); // lowest byte
-  Wire.write(val >>  8);
+  Wire.write(val >> 0); // lowest byte
+  Wire.write(val >> 8);
   Wire.write(val >> 16);
   Wire.write(val >> 24); // highest byte
-  Wire.endTransmission();
+  _lastError = Wire.endTransmission();
 }
 
 void TicI2C::commandW7(TicCommand cmd, uint8_t val)
@@ -92,19 +92,7 @@ void TicI2C::commandW7(TicCommand cmd, uint8_t val)
   Wire.beginTransmission(_address);
   Wire.write((uint8_t)cmd);
   Wire.write(val & 0x7F);
-  Wire.endTransmission();
-}
-
-uint8_t TicI2C::commandR8(TicCommand cmd)
-{
-  uint8_t val;
-  Wire.beginTransmission(_address);
-  Wire.write((uint8_t)cmd);
-  Wire.endTransmission(false); // no stop (repeated start)
-  Wire.requestFrom(_address, (uint8_t)1);
-  val = Wire.read();
-  Wire.endTransmission();
-  return val;
+  _lastError = Wire.endTransmission();
 }
 
 void TicI2C::getSegment(TicCommand cmd, uint8_t offset,
@@ -113,10 +101,17 @@ void TicI2C::getSegment(TicCommand cmd, uint8_t offset,
   Wire.beginTransmission(_address);
   Wire.write((uint8_t)cmd);
   Wire.write(offset);
-  Wire.endTransmission(false); // no stop (repeated start)
-  Wire.requestFrom(_address, (uint8_t)length);
+  _lastError = Wire.endTransmission(false); // no stop (repeated start)
+  if (_lastError) { return; }
 
-  // TODO: check Wire.available() and handle errors
+  uint8_t byteCount = Wire.requestFrom(_address, (uint8_t)length);
+  if (byteCount != length)
+  {
+    _lastError = 50;
+    return;
+  }
+
+  _lastError = 0;
 
   uint8_t * ptr = buffer;
   for (uint8_t i = 0; i < length; i++)
