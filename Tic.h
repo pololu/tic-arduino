@@ -95,8 +95,8 @@ enum class TicInputState
 
 enum class TicMiscFlags1
 {
-  Energized = 1,
-  PositionUncertain = 2,
+  Energized = 0,
+  PositionUncertain = 1,
 };
 
 class TicBase
