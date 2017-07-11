@@ -3,7 +3,7 @@
 #include <Stream.h>
 #include <Wire.h>
 
-const uint8_t TicCurrentUnits = 32;
+uint8_t const TicCurrentUnits = 32;
 
 enum class TicError
 {
@@ -437,7 +437,6 @@ private:
 class TicSerial : public TicBase
 {
 public:
-
   TicSerial(Stream & stream, uint8_t deviceNumber = 255) :
     _stream(&stream),
     _deviceNumber(deviceNumber)
@@ -480,7 +479,6 @@ private:
   void commandW32(TicCommand cmd, uint32_t val);
   void commandW7(TicCommand cmd, uint8_t val);
   uint8_t commandR8(TicCommand cmd);
-
   void getSegment(TicCommand cmd, uint8_t offset,
     uint8_t length, void * buffer);
 };

@@ -55,7 +55,7 @@ void TicSerial::sendCommandHeader(TicCommand cmd)
 {
   if (_deviceNumber == 255)
   {
-    // compact protocol
+    // Compact protocol
     _stream->write((uint8_t)cmd);
   }
   else
