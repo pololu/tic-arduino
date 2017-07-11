@@ -361,7 +361,10 @@ public:
     return getVar32(VarOffset::InputAfterScaling);
   }
 
-  virtual void getSetting(uint8_t offset, uint8_t length, uint8_t * buf) = 0;
+  void getSetting(uint8_t offset, uint8_t length, uint8_t * buffer)
+  {
+    getSegment(TicCommand::GetSetting, offset, length, buffer);
+  }
 
 private:
   enum VarOffset
@@ -401,18 +404,35 @@ private:
     InputAfterScaling     = 0x51, // uint16_t
   };
 
+  uint8_t getVar8(uint8_t offset)
+  {
+    uint8_t result;
+    getSegment(TicCommand::GetVariable, offset, 1, &result);
+    return result;
+  }
+
+  uint16_t getVar16(uint8_t offset)
+  {
+    // Assumption: Integers in this program are two's complement, little-endian.
+    uint16_t result;
+    getSegment(TicCommand::GetVariable, offset, 2, &result);
+    return result;
+  }
+
+  uint32_t getVar32(uint8_t offset)
+  {
+    uint32_t result;
+    getSegment(TicCommand::GetVariable, offset, 4, &result);
+    return result;
+  }
+
   virtual void commandQuick(TicCommand cmd) = 0;
   virtual void commandW32(TicCommand cmd, uint32_t val) = 0;
   virtual void commandW7(TicCommand cmd, uint8_t val) = 0;
   virtual void commandW2x7(TicCommand cmd, uint8_t val1, uint8_t val2) = 0;
   virtual uint8_t commandR8(TicCommand cmd) = 0;
-
   virtual void getSegment(TicCommand cmd, uint8_t offset,
     uint8_t length, void * buffer);
-
-  virtual uint8_t getVar8(uint8_t offset) = 0;
-  virtual uint16_t getVar16(uint8_t offset) = 0;
-  virtual uint32_t getVar32(uint8_t offset) = 0;
 };
 
 class TicSerial : public TicBase
@@ -427,7 +447,7 @@ public:
 
   uint8_t getDeviceNumber() { return _deviceNumber; }
 
-  void getSetting(uint8_t offset, uint8_t length, uint8_t * const buf);
+  void getSetting(uint8_t offset, uint8_t length, uint8_t * buf);
 
 private:
   Stream * const _stream;
@@ -438,13 +458,8 @@ private:
   void commandW7(TicCommand cmd, uint8_t val);
   void commandW2x7(TicCommand cmd, uint8_t val1, uint8_t val2);
   uint8_t commandR8(TicCommand cmd);
-
   void getSegment(TicCommand cmd, uint8_t offset,
     uint8_t length, void * buffer);
-
-  uint8_t getVar8(uint8_t offset);
-  uint16_t getVar16(uint8_t offset);
-  uint32_t getVar32(uint8_t offset);
 
   void sendCommandHeader(TicCommand cmd);
   void serialW7(uint8_t val) { _stream->write(val & 0x7F); }
@@ -460,8 +475,6 @@ public:
 
   uint8_t getAddress() { return _address; }
 
-  void getSetting(uint8_t offset, uint8_t length, uint8_t * const buf);
-
 private:
   uint8_t const _address;
 
@@ -473,8 +486,4 @@ private:
 
   void getSegment(TicCommand cmd, uint8_t offset,
     uint8_t length, void * buffer);
-
-  uint8_t getVar8(uint8_t offset);
-  uint16_t getVar16(uint8_t offset);
-  uint32_t getVar32(uint8_t offset);
 };
