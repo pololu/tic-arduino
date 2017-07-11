@@ -80,14 +80,12 @@ uint32_t TicSerial::getVar32(uint8_t offset)
   return val;
 }
 
-void TicSerial::getSetting(uint8_t offset, uint8_t length, uint8_t * const buf)
+void TicSerial::getSetting(uint8_t offset, uint8_t length, uint8_t * buf)
 {
   uint8_t count = 0;
   uint8_t * ptr = buf;
 
-  length &= 0x7F; // serialW7 will only send 7 bit value anyway, but make sure
-                  // the receive loop doesn't wait for >127 bytes later
-                  // TODO: probably stricter length constraint
+  length &= 0x7F;
 
   sendCommandHeader(TicCommand::GetSetting);
   serialW7(offset);
@@ -98,6 +96,22 @@ void TicSerial::getSetting(uint8_t offset, uint8_t length, uint8_t * const buf)
     while (_stream->available() < 1) {}
     *ptr = _stream->read();
     ptr++;
+  }
+}
+
+void TicSerial::getSegment(TicCommand cmd, uint8_t offset,
+  uint8_t length, void * buffer)
+{
+  length &= 0x7F;
+  sendCommandHeader(cmd);
+  serialW7(offset);
+  serialW7(length);
+
+  uint8_t * ptr = buffer;
+  for (uint8_t i = 0; i < length; i++)
+  {
+    while (_stream->available() < 1) {}
+    *ptr++ = _stream->read();
   }
 }
 
@@ -215,13 +229,31 @@ void TicI2C::getSetting(uint8_t offset, uint8_t length, uint8_t * buf)
   Wire.beginTransmission(_address);
   Wire.write((uint8_t)TicCommand::GetSetting);
   Wire.write(offset);
-  Wire.write(length);
   Wire.endTransmission(false); // no stop (repeated start)
   Wire.requestFrom(_address, (uint8_t)length);
 
   uint8_t count = 0;
   uint8_t * ptr = buf;
   while (count < length && Wire.available())
+  {
+    *ptr = Wire.read();
+    ptr++;
+  }
+}
+
+void TicI2C::getSegment(TicCommand cmd, uint8_t offset,
+  uint8_t length, void * buffer)
+{
+  Wire.beginTransmission(_address);
+  Wire.write((uint8_t)cmd);
+  Wire.write(offset);
+  Wire.endTransmission(false); // no stop (repeated start)
+  Wire.requestFrom(_address, (uint8_t)length);
+
+  // TODO: check Wire.available() and handle errors
+
+  uint8_t * ptr = buffer;
+  for (uint8_t i = 0; i < length; i++)
   {
     *ptr = Wire.read();
     ptr++;

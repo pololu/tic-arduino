@@ -5,6 +5,24 @@
 
 const uint8_t TicCurrentUnits = 32;
 
+enum class TicError
+{
+  IntentionallyDeenergized = 0,
+  MotorDriverError         = 1,
+  LowVin                   = 2,
+  KillSwitch               = 3,
+  RequiredInputInvalid     = 4,
+  SerialError              = 5,
+  CommandTimeout           = 6,
+  SafeStartViolation       = 7,
+  ErrLineHigh              = 8,
+  SerialFraming            = 16,
+  RxOverrun                = 17,
+  Format                   = 18,
+  Crc                      = 19,
+  EncoderSkip              = 20,
+};
+
 enum class TicCommand
 {
   SetTargetPosition                 = 0xE0,
@@ -212,6 +230,14 @@ public:
     return getVar16(VarOffset::ErrorStatus);
   }
 
+  uint32_t getErrorsOccurred()
+  {
+    uint32_t result;
+    getSegment(TicCommand::GetVariableAndClearErrorsOccurred,
+      VarOffset::ErrorsOccurred, 4, &result);
+    return result;
+  }
+
   TicPlanningMode getPlanningMode()
   {
     return (TicPlanningMode)getVar8(VarOffset::PlanningMode);
@@ -381,6 +407,9 @@ private:
   virtual void commandW2x7(TicCommand cmd, uint8_t val1, uint8_t val2) = 0;
   virtual uint8_t commandR8(TicCommand cmd) = 0;
 
+  virtual void getSegment(TicCommand cmd, uint8_t offset,
+    uint8_t length, void * buffer);
+
   virtual uint8_t getVar8(uint8_t offset) = 0;
   virtual uint16_t getVar16(uint8_t offset) = 0;
   virtual uint32_t getVar32(uint8_t offset) = 0;
@@ -410,6 +439,9 @@ private:
   void commandW2x7(TicCommand cmd, uint8_t val1, uint8_t val2);
   uint8_t commandR8(TicCommand cmd);
 
+  void getSegment(TicCommand cmd, uint8_t offset,
+    uint8_t length, void * buffer);
+
   uint8_t getVar8(uint8_t offset);
   uint16_t getVar16(uint8_t offset);
   uint32_t getVar32(uint8_t offset);
@@ -438,6 +470,9 @@ private:
   void commandW7(TicCommand cmd, uint8_t val);
   void commandW2x7(TicCommand cmd, uint8_t val1, uint8_t val2);
   uint8_t commandR8(TicCommand cmd);
+
+  void getSegment(TicCommand cmd, uint8_t offset,
+    uint8_t length, void * buffer);
 
   uint8_t getVar8(uint8_t offset);
   uint16_t getVar16(uint8_t offset);
