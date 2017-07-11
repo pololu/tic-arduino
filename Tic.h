@@ -413,17 +413,19 @@ private:
 
   uint16_t getVar16(uint8_t offset)
   {
-    // Assumption: Integers in this program are two's complement, little-endian.
-    uint16_t result;
-    getSegment(TicCommand::GetVariable, offset, 2, &result);
-    return result;
+    uint8_t buffer[2];
+    getSegment(TicCommand::GetVariable, offset, 2, &buffer);
+    return ((uint16_t)buffer[0] << 0) | ((uint16_t)buffer[1] << 8);
   }
 
   uint32_t getVar32(uint8_t offset)
   {
-    uint32_t result;
-    getSegment(TicCommand::GetVariable, offset, 4, &result);
-    return result;
+    uint8_t buffer[4];
+    getSegment(TicCommand::GetVariable, offset, 4, buffer);
+    return ((uint32_t)buffer[0] << 0) |
+      ((uint32_t)buffer[1] << 8) |
+      ((uint32_t)buffer[2] << 16) |
+      ((uint32_t)buffer[3] << 24);
   }
 
   virtual void commandQuick(TicCommand cmd) = 0;
