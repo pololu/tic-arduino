@@ -5,9 +5,9 @@
 void TicSerial::commandW32(TicCommand cmd, uint32_t val)
 {
   sendCommandHeader(cmd);
-  
+
   /* byte with MSbs:
-  bit 0 = MSb of first (least significant) data byte 
+  bit 0 = MSb of first (least significant) data byte
   bit 1 = MSb of second data byte
   bit 2 = MSb of third data byte
   bit 3 = MSb of fourth (most significant) data byte
@@ -84,15 +84,15 @@ void TicSerial::getSetting(uint8_t offset, uint8_t length, uint8_t * const buf)
 {
   uint8_t count = 0;
   uint8_t * ptr = buf;
-  
+
   length &= 0x7F; // serialW7 will only send 7 bit value anyway, but make sure
                   // the receive loop doesn't wait for >127 bytes later
                   // TODO: probably stricter length constraint
-  
+
   sendCommandHeader(TicCommand::GetSetting);
   serialW7(offset);
   serialW7(length);
-  
+
   while (count < length)
   {
     while (_stream->available() < 1) {}
@@ -158,7 +158,6 @@ void TicI2C::commandW2x7(TicCommand cmd, uint8_t val1, uint8_t val2)
 uint8_t TicI2C::commandR8(TicCommand cmd)
 {
   uint8_t val;
-  
   Wire.beginTransmission(_address);
   Wire.write((uint8_t)cmd);
   Wire.endTransmission(false); // no stop (repeated start)
@@ -171,7 +170,6 @@ uint8_t TicI2C::commandR8(TicCommand cmd)
 uint8_t TicI2C::getVar8(uint8_t offset)
 {
   uint8_t val;
-  
   Wire.beginTransmission(_address);
   Wire.write((uint8_t)TicCommand::GetVariable);
   Wire.write(offset);
@@ -185,7 +183,6 @@ uint8_t TicI2C::getVar8(uint8_t offset)
 uint16_t TicI2C::getVar16(uint8_t offset)
 {
   uint16_t val;
-  
   Wire.beginTransmission(_address);
   Wire.write((uint8_t)TicCommand::GetVariable);
   Wire.write(offset);
@@ -200,7 +197,6 @@ uint16_t TicI2C::getVar16(uint8_t offset)
 uint32_t TicI2C::getVar32(uint8_t offset)
 {
   uint32_t val;
-
   Wire.beginTransmission(_address);
   Wire.write((uint8_t)TicCommand::GetVariable);
   Wire.write(offset);
