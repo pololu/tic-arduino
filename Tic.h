@@ -9,19 +9,35 @@ enum class TicCommand
 {
   SetTargetPosition                 = 0xE0,
   SetTargetVelocity                 = 0xE3,
-  SetCurrentPosition                = 0xEC,
-  Stop                              = 0x89,
-  EnableDriver                      = 0x85,
-  DisableDriver                     = 0x86,
+  HaltAndSetPosition                = 0xEC,
+  HaltAndHold                       = 0x89,
+  ResetCommandTimeout               = 0x8C,
+  Deenergize                        = 0x86,
+  Energize                          = 0x85,
+  ExitSafeStart                     = 0x83,
+  EnterSafeStart                    = 0x8F,
+  Reset                             = 0xB0,
+  ClearDriverError                  = 0x8A,
   SetSpeedMax                       = 0xE6,
-  SetSpeedMin                       = 0xE5,
+  SetStartingSpeed                  = 0xE5,
   SetAccelMax                       = 0xEA,
   SetDecelMax                       = 0xE9,
   SetStepMode                       = 0x94,
   SetCurrentLimit                   = 0x91,
   SetDecayMode                      = 0x92,
   GetVariable                       = 0xA1,
+  GetVariableAndClearErrorsOccurred = 0xA2,
   GetSetting                        = 0xA8,
+};
+
+enum class TicOperationState
+{
+  Reset = 0,
+  Deenergized = 2,
+  SoftError = 4,
+  WaitingForErrLine = 6,
+  StartingUp = 8,
+  Normal = 10,
 };
 
 enum class TicPlanningMode
@@ -68,6 +84,21 @@ enum class TicPinState
   OutputHigh    = 3,
 };
 
+enum class TicInputState
+{
+  NotReady = 0,
+  Invalid = 1,
+  Halt = 2,
+  Position = 3,
+  Velocity = 4,
+};
+
+enum class TicMiscFlags1
+{
+  Energized = 1,
+  PositionUncertain = 2,
+};
+
 class TicBase
 {
 public:
@@ -81,24 +112,49 @@ public:
     commandW32(TicCommand::SetTargetVelocity, velocity);
   }
 
-  void setCurrentPosition(int32_t position)
+  void haltAndSetPosition(int32_t position)
   {
-    commandW32(TicCommand::SetCurrentPosition, position);
+    commandW32(TicCommand::HaltAndSetPosition, position);
   }
 
-  void stop()
+  void haltAndHold()
   {
-    commandQuick(TicCommand::Stop);
+    commandQuick(TicCommand::HaltAndHold);
   }
 
-  void enableDriver()
+  void resetCommandTimeout()
   {
-    commandQuick(TicCommand::EnableDriver);
+    commandQuick(TicCommand::ResetCommandTimeout);
   }
 
-  void disableDriver()
+  void deenergize()
   {
-    commandQuick(TicCommand::DisableDriver);
+    commandQuick(TicCommand::Deenergize);
+  }
+
+  void energize()
+  {
+    commandQuick(TicCommand::Energize);
+  }
+
+  void exitSafeStart()
+  {
+    commandQuick(TicCommand::ExitSafeStart);
+  }
+
+  void enterSafeStart()
+  {
+    commandQuick(TicCommand::EnterSafeStart);
+  }
+
+  void reset()
+  {
+    commandQuick(TicCommand::Reset);
+  }
+
+  void clearDriverError()
+  {
+    commandQuick(TicCommand::ClearDriverError);
   }
 
   void setSpeedMax(uint32_t speed)
@@ -106,9 +162,9 @@ public:
     commandW32(TicCommand::SetSpeedMax, speed);
   }
 
-  void setSpeedMin(uint32_t speed)
+  void setStartingSpeed(uint32_t speed)
   {
-    commandW32(TicCommand::SetSpeedMin, speed);
+    commandW32(TicCommand::SetStartingSpeed, speed);
   }
 
   void setAccelMax(uint32_t accel)
@@ -136,14 +192,24 @@ public:
     commandW7(TicCommand::SetDecayMode, (uint8_t)mode);
   }
 
+  TicOperationState getOperationState()
+  {
+    return (TicOperationState)getVar8(VarOffset::OperationState);
+  }
+
+  bool getEnergized()
+  {
+    return getVar8(VarOffset::MiscFlags1) >> (uint8_t)TicMiscFlags1::Energized & 1;
+  }
+
+  bool getPositionUncertain()
+  {
+    return getVar8(VarOffset::MiscFlags1) >> (uint8_t)TicMiscFlags1::PositionUncertain & 1;
+  }
+
   uint16_t getErrorStatus()
   {
     return getVar16(VarOffset::ErrorStatus);
-  }
-
-  uint8_t getSwitchStatus()
-  {
-    return getVar8(VarOffset::SwitchStatus);
   }
 
   TicPlanningMode getPlanningMode()
@@ -151,24 +217,88 @@ public:
     return (TicPlanningMode)getVar8(VarOffset::PlanningMode);
   }
 
-  int32_t getTargetPosition()          { return (int32_t)getVar32(VarOffset::TargetPosition); }
-  int32_t getTargetVelocity()          { return (int32_t)getVar32(VarOffset::TargetVelocity); }
-  uint32_t getSpeedMin()               { return getVar32(VarOffset::SpeedMin); }
-  uint32_t getSpeedMax()               { return getVar32(VarOffset::SpeedMax); }
-  uint32_t getDecelMax()               { return getVar32(VarOffset::DecelMax); }
-  uint32_t getAccelMax()               { return getVar32(VarOffset::AccelMax); }
-  int32_t getCurrentPosition()         { return (int32_t)getVar32(VarOffset::CurrentPosition); }
-  int32_t getCurrentVelocity()         { return (int32_t)getVar32(VarOffset::CurrentVelocity); }
-  int32_t getActingTargetPosition()    { return (int32_t)getVar32(VarOffset::ActingTargetPosition); }
-  uint32_t getTimeSinceLastStep()      { return getVar32(VarOffset::TimeSinceLastStep); }
-  uint8_t getDeviceReset()             { return getVar8(VarOffset::DeviceReset); }
-  uint16_t getVinVoltage()             { return getVar16(VarOffset::VinVoltage); }
-  uint32_t getUpTime()                 { return getVar32(VarOffset::UpTime); }
-  int32_t getEncoderPosition()         { return (int32_t)getVar32(VarOffset::EncoderPosition); }
-  uint16_t getRCPulseWidth()           { return getVar16(VarOffset::RCPulseWidth); }
-  uint16_t getAnalogReading(TicPin pin);
-  uint8_t getDigitalReading(TicPin pin);
-  uint8_t getPinState(TicPin pin);
+  int32_t getTargetPosition()
+  {
+    return getVar32(VarOffset::TargetPosition);
+  }
+
+  int32_t getTargetVelocity()
+  {
+    return getVar32(VarOffset::TargetVelocity);
+  }
+
+  uint32_t getStartingSpeed()
+  {
+    return getVar32(VarOffset::StartingSpeed);
+  }
+
+  uint32_t getSpeedMax()
+  {
+    return getVar32(VarOffset::SpeedMax);
+  }
+
+  uint32_t getDecelMax()
+  {
+    return getVar32(VarOffset::DecelMax);
+  }
+
+  uint32_t getAccelMax()
+  {
+    return getVar32(VarOffset::AccelMax);
+  }
+
+  int32_t getCurrentPosition()
+  {
+    return getVar32(VarOffset::CurrentPosition);
+  }
+
+  int32_t getCurrentVelocity()
+  {
+    return getVar32(VarOffset::CurrentVelocity);
+  }
+
+  uint8_t getDeviceReset()
+  {
+    return getVar8(VarOffset::DeviceReset);
+  }
+
+  uint16_t getVinVoltage()
+  {
+    return getVar16(VarOffset::VinVoltage);
+  }
+
+  uint32_t getUpTime()
+  {
+    return getVar32(VarOffset::UpTime);
+  }
+
+  int32_t getEncoderPosition()
+  {
+    return getVar32(VarOffset::EncoderPosition);
+  }
+
+  uint16_t getRCPulseWidth()
+  {
+    return getVar16(VarOffset::RCPulseWidth);
+  }
+
+  uint16_t getAnalogReading(TicPin pin)
+  {
+    uint8_t offset = VarOffset::AnalogReadingSCL + 2 * (uint8_t)pin;
+    return getVar16(offset);
+  }
+
+  uint8_t getDigitalReading(TicPin pin)
+  {
+    uint8_t readings = getVar8(VarOffset::DigitalReadings);
+    return (readings >> (uint8_t)pin) & 1;
+  }
+
+  TicPinState getPinState(TicPin pin)
+  {
+    uint8_t states = getVar8(VarOffset::PinStates);
+    return (TicPinState)(states >> (2 * (uint8_t)pin) & 0b11);
+  }
 
   TicStepMode getStepMode()
   {
@@ -185,40 +315,64 @@ public:
     return (TicDecayMode)getVar8(VarOffset::DecayMode);
   }
 
+  TicInputState getInputState()
+  {
+    return (TicInputState)getVar8(VarOffset::InputState);
+  }
+
+  uint16_t getInputAfterAveraging()
+  {
+    return getVar16(VarOffset::InputAfterAveraging);
+  }
+
+  uint16_t getInputAfterHysteresis()
+  {
+    return getVar16(VarOffset::InputAfterHysteresis);
+  }
+
+  int32_t getInputAfterScaling()
+  {
+    return getVar32(VarOffset::InputAfterScaling);
+  }
+
   virtual void getSetting(uint8_t offset, uint8_t length, uint8_t * buf) = 0;
 
 private:
   enum VarOffset
   {
     OperationState        = 0x00, // uint8_t
-    ErrorStatus           = 0x01, // uint16_t
-    ErrorsOccurred        = 0x03, // uint32_t
-    SwitchStatus          = 0x07, // uint8_t
-    PlanningMode          = 0x08, // uint8_t
-    TargetPosition        = 0x09, // int32_t
-    TargetVelocity        = 0x0D, // int32_t
-    SpeedMin              = 0x11, // uint32_t
-    SpeedMax              = 0x15, // uint32_t
-    DecelMax              = 0x19, // uint32_t
-    AccelMax              = 0x1D, // uint32_t
-    CurrentPosition       = 0x21, // int32_t
-    CurrentVelocity       = 0x25, // int32_t
-    ActingTargetPosition  = 0x29, // int32_t
-    TimeSinceLastStep     = 0x2D, // uint32_t
-    DeviceReset           = 0x31, // uint8_t
-    VinVoltage            = 0x32, // uint16_t
-    UpTime                = 0x34, // uint32_t
-    EncoderPosition       = 0x38, // int32_t
-    RCPulseWidth          = 0x3C, // uint16_t
-    AnalogReadingSCL      = 0x3E, // uint16_t
-    AnalogReadingSDA      = 0x40, // uint16_t
-    AnalogReadingTX       = 0x42, // uint16_t
-    AnalogReadingRX       = 0x44, // uint16_t
-    DigitalReadings       = 0x46, // uint8_t
-    PinStates             = 0x47, // uint8_t
-    StepMode              = 0x48, // uint8_t
-    CurrentLimit          = 0x49, // uint8_t
-    DecayMode             = 0x4A, // uint8_t
+    MiscFlags1            = 0x01, // uint8_t
+    ErrorStatus           = 0x02, // uint16_t
+    ErrorsOccurred        = 0x04, // uint32_t
+    PlanningMode          = 0x09, // uint8_t
+    TargetPosition        = 0x0A, // int32_t
+    TargetVelocity        = 0x0E, // int32_t
+    StartingSpeed         = 0x12, // uint32_t
+    SpeedMax              = 0x16, // uint32_t
+    DecelMax              = 0x1A, // uint32_t
+    AccelMax              = 0x1E, // uint32_t
+    CurrentPosition       = 0x22, // int32_t
+    CurrentVelocity       = 0x26, // int32_t
+    ActingTargetPosition  = 0x2A, // int32_t
+    TimeSinceLastStep     = 0x2E, // uint32_t
+    DeviceReset           = 0x32, // uint8_t
+    VinVoltage            = 0x33, // uint16_t
+    UpTime                = 0x35, // uint32_t
+    EncoderPosition       = 0x39, // int32_t
+    RCPulseWidth          = 0x3D, // uint16_t
+    AnalogReadingSCL      = 0x3F, // uint16_t
+    AnalogReadingSDA      = 0x41, // uint16_t
+    AnalogReadingTX       = 0x43, // uint16_t
+    AnalogReadingRX       = 0x45, // uint16_t
+    DigitalReadings       = 0x47, // uint8_t
+    PinStates             = 0x48, // uint8_t
+    StepMode              = 0x49, // uint8_t
+    CurrentLimit          = 0x4A, // uint8_t
+    DecayMode             = 0x4B, // uint8_t
+    InputState            = 0x4C, // uint8_t
+    InputAfterAveraging   = 0x4D, // uint16_t
+    InputAfterHysteresis  = 0x4F, // uint16_t
+    InputAfterScaling     = 0x51, // uint16_t
   };
 
   virtual void commandQuick(TicCommand cmd) = 0;

@@ -1,26 +1,5 @@
 #include <Tic.h>
 
-/*** TicBase ***/
-
-uint16_t TicBase::getAnalogReading(TicPin pin)
-{
-  uint8_t offset = VarOffset::AnalogReadingSCL + 2 * (uint8_t)pin;
-  return getVar16(offset);
-}
-
-uint8_t TicBase::getDigitalReading(TicPin pin)
-{ 
-  uint8_t readings = getVar8(VarOffset::DigitalReadings);
-  return (readings >> (uint8_t)pin) & 1;
-}
-
-uint8_t TicBase::getPinState(TicPin pin)
-{
-  uint8_t states = getVar8(VarOffset::PinStates);
-  return (states >> (2 * (uint8_t)pin)) & 0b11;
-}
-
-
 /*** TicSerial ***/
 
 void TicSerial::commandW32(TicCommand cmd, uint32_t val)
