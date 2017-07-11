@@ -1,17 +1,16 @@
 #include <Tic.h>
 
-/*** TicSerial ***/
+/**** TicSerial ****/
 
 void TicSerial::commandW32(TicCommand cmd, uint32_t val)
 {
   sendCommandHeader(cmd);
 
-  /* byte with MSbs:
-  bit 0 = MSb of first (least significant) data byte
-  bit 1 = MSb of second data byte
-  bit 2 = MSb of third data byte
-  bit 3 = MSb of fourth (most significant) data byte
-  */
+  // byte with MSbs:
+  // bit 0 = MSb of first (least significant) data byte
+  // bit 1 = MSb of second data byte
+  // bit 2 = MSb of third data byte
+  // bit 3 = MSb of fourth (most significant) data byte
   serialW7(((val >>  7) & 1) |
            ((val >> 14) & 2) |
            ((val >> 21) & 4) |
@@ -27,13 +26,6 @@ void TicSerial::commandW7(TicCommand cmd, uint8_t val)
 {
   sendCommandHeader(cmd);
   serialW7(val);
-}
-
-void TicSerial::commandW2x7(TicCommand cmd, uint8_t val1, uint8_t val2)
-{
-  sendCommandHeader(cmd);
-  serialW7(val1);
-  serialW7(val2);
 }
 
 uint8_t TicSerial::commandR8(TicCommand cmd)
@@ -75,7 +67,6 @@ void TicSerial::sendCommandHeader(TicCommand cmd)
   }
 }
 
-
 /*** TicI2C ***/
 
 void TicI2C::commandQuick(TicCommand cmd)
@@ -101,15 +92,6 @@ void TicI2C::commandW7(TicCommand cmd, uint8_t val)
   Wire.beginTransmission(_address);
   Wire.write((uint8_t)cmd);
   Wire.write(val & 0x7F);
-  Wire.endTransmission();
-}
-
-void TicI2C::commandW2x7(TicCommand cmd, uint8_t val1, uint8_t val2)
-{
-  Wire.beginTransmission(_address);
-  Wire.write((uint8_t)cmd);
-  Wire.write(val1 & 0x7F);
-  Wire.write(val2 & 0x7F);
   Wire.endTransmission();
 }
 

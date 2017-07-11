@@ -429,7 +429,6 @@ private:
   virtual void commandQuick(TicCommand cmd) = 0;
   virtual void commandW32(TicCommand cmd, uint32_t val) = 0;
   virtual void commandW7(TicCommand cmd, uint8_t val) = 0;
-  virtual void commandW2x7(TicCommand cmd, uint8_t val1, uint8_t val2) = 0;
   virtual uint8_t commandR8(TicCommand cmd) = 0;
   virtual void getSegment(TicCommand cmd, uint8_t offset,
     uint8_t length, void * buffer);
@@ -456,7 +455,6 @@ private:
   void commandQuick(TicCommand cmd) { sendCommandHeader(cmd); }
   void commandW32(TicCommand cmd, uint32_t val);
   void commandW7(TicCommand cmd, uint8_t val);
-  void commandW2x7(TicCommand cmd, uint8_t val1, uint8_t val2);
   uint8_t commandR8(TicCommand cmd);
   void getSegment(TicCommand cmd, uint8_t offset,
     uint8_t length, void * buffer);
@@ -481,7 +479,6 @@ private:
   void commandQuick(TicCommand cmd);
   void commandW32(TicCommand cmd, uint32_t val);
   void commandW7(TicCommand cmd, uint8_t val);
-  void commandW2x7(TicCommand cmd, uint8_t val1, uint8_t val2);
   uint8_t commandR8(TicCommand cmd);
 
   void getSegment(TicCommand cmd, uint8_t offset,
