@@ -235,18 +235,17 @@ uint32_t TicI2C::getVar32(uint8_t offset)
   return val;
 }
 
-void TicI2C::getSetting(uint8_t offset, uint8_t length, uint8_t * const buf)
+void TicI2C::getSetting(uint8_t offset, uint8_t length, uint8_t * buf)
 {
-  uint8_t count = 0;
-  uint8_t * ptr = buf;
-  
   Wire.beginTransmission(_address);
   Wire.write((uint8_t)TicCommand::GetSetting);
   Wire.write(offset);
   Wire.write(length);
   Wire.endTransmission(false); // no stop (repeated start)
   Wire.requestFrom(_address, (uint8_t)length);
-  
+
+  uint8_t count = 0;
+  uint8_t * ptr = buf;
   while (count < length && Wire.available())
   {
     *ptr = Wire.read();

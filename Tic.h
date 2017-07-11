@@ -185,7 +185,7 @@ public:
     return (TicDecayMode)getVar8(VarOffset::DecayMode);
   }
 
-  virtual void getSetting(uint8_t offset, uint8_t length, uint8_t * const buf) = 0;
+  virtual void getSetting(uint8_t offset, uint8_t length, uint8_t * buf) = 0;
 
 private:
   enum VarOffset
