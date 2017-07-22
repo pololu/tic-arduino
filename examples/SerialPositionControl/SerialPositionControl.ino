@@ -9,7 +9,7 @@
 //
 // If you have sent a De-energize command to the Tic, for example
 // by clicking "De-energize" in the Tic Control Center, you will
-// need to undo that by clicking "Energize" or power-cycling the
+// need to undo that by clicking "Resume" or power-cycling the
 // Tic.
 
 #include <Tic.h>
@@ -65,7 +65,7 @@ void delayWithResetCommandTimeout(uint32_t ms)
   uint32_t start = millis();
   do
   {
-    tic.resetCommandTimeout();
+    resetCommandTimeout();
   }
   while ((uint32_t)(millis() - start) <= ms);
 }
@@ -81,7 +81,7 @@ void waitForTargetPositionOrError(int32_t targetPosition)
   {
     resetCommandTimeout();
   }
-  while (tic.getCurrentPosition() != targetPosition)
+  while (tic.getCurrentPosition() != targetPosition);
 }
 
 void loop()
