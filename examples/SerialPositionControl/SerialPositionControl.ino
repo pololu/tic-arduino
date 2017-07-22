@@ -66,8 +66,7 @@ void delayWithResetCommandTimeout(uint32_t ms)
   do
   {
     resetCommandTimeout();
-  }
-  while ((uint32_t)(millis() - start) <= ms);
+  } while ((uint32_t)(millis() - start) <= ms);
 }
 
 // Polls the Tic, waiting for it to reach the specified target
@@ -80,8 +79,7 @@ void waitForTargetPositionOrError(int32_t targetPosition)
   do
   {
     resetCommandTimeout();
-  }
-  while (tic.getCurrentPosition() != targetPosition);
+  } while (tic.getCurrentPosition() != targetPosition);
 }
 
 void loop()
