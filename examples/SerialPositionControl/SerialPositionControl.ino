@@ -77,10 +77,11 @@ void delayWithResetCommandTimeout(uint32_t ms)
 // happens, you will need to reset your Arduino.
 void waitForTargetPositionOrError(int32_t targetPosition)
 {
-  while (tic.getCurrentPosition() != targetPosition)
+  do
   {
     resetCommandTimeout();
   }
+  while (tic.getCurrentPosition() != targetPosition)
 }
 
 void loop()
