@@ -86,7 +86,7 @@ void waitForTargetPositionOrError(int32_t targetPosition)
 
 void loop()
 {
-  // Tell the Tic to move to position 100.  We delay for 2500 ms
+  // Tell the Tic to move to position 100, and delay for 2500 ms
   // to give it time to get there.
   tic.setTargetPosition(100);
   delayWithResetCommandTimeout(2500);
