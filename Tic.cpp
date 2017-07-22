@@ -44,6 +44,10 @@ void TicSerial::getSegment(TicCommand cmd, uint8_t offset,
   if (byteCount != length)
   {
     _lastError = 50;
+
+    // Set the buffer bytes to 0 so the program will not use an uninitialized
+    // variable.
+    memset(buffer, 0, length);
     return;
   }
 
@@ -102,12 +106,20 @@ void TicI2C::getSegment(TicCommand cmd, uint8_t offset,
   Wire.write((uint8_t)cmd);
   Wire.write(offset);
   _lastError = Wire.endTransmission(false); // no stop (repeated start)
-  if (_lastError) { return; }
+  if (_lastError)
+  {
+    // Set the buffer bytes to 0 so the program will not use an uninitialized
+    // variable.
+    memset(buffer, 0, length);
+    return;
+  }
 
   uint8_t byteCount = Wire.requestFrom(_address, (uint8_t)length);
   if (byteCount != length)
   {
     _lastError = 50;
+
+    memset(buffer, 0, length);
     return;
   }
 
