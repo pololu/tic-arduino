@@ -15,7 +15,7 @@
 #include <Tic.h>
 
 // On boards with a hardware serial port available for use, use
-// that port to communicate with the Maestro. For other boards,
+// that port to communicate with the Tic. For other boards,
 // create a SoftwareSerial object using pin 10 to receive (RX)
 // and pin 11 to transmit (TX).
 #ifdef SERIAL_PORT_HARDWARE_OPEN
