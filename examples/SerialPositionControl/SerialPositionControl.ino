@@ -59,8 +59,9 @@ void resetCommandTimeout()
 }
 
 // Delays for the specified number of milliseconds while
-// resetting the Tic.
-void delayWithResetCommandTimeout(uint32_t ms)
+// resetting the Tic's command timeout so that its movement does
+// not get interrupted.
+void delayWhileMoving(uint32_t ms)
 {
   uint32_t start = millis();
   do
@@ -74,7 +75,7 @@ void delayWithResetCommandTimeout(uint32_t ms)
 // probably go into safe-start mode and never reach its target
 // position, so this function will loop infinitely.  If that
 // happens, you will need to reset your Arduino.
-void waitForTargetPositionOrError(int32_t targetPosition)
+void waitForPosition(int32_t targetPosition)
 {
   do
   {
@@ -84,13 +85,13 @@ void waitForTargetPositionOrError(int32_t targetPosition)
 
 void loop()
 {
-  // Tell the Tic to move to position 100, and delay for 2500 ms
-  // to give it time to get there.
+  // Tell the Tic to move to position 100, and wait until it gets
+  // there.
   tic.setTargetPosition(100);
-  delayWithResetCommandTimeout(2500);
+  waitForPosition(100);
 
-  // Tell the Tic to move to position -100, and wait until it
-  // gets there.
+  // Tell the Tic to move to position -100, and delay for 3000 ms
+  // to give it time to get there.
   tic.setTargetPosition(-100);
-  waitForTargetPositionOrError(-100);
+  delayWhileMoving(3000);
 }

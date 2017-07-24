@@ -501,4 +501,5 @@ private:
   void commandW7(TicCommand cmd, uint8_t val);
   void getSegment(TicCommand cmd, uint8_t offset,
     uint8_t length, void * buffer);
+  void delayAfterRead();
 };

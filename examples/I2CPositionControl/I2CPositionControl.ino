@@ -19,9 +19,6 @@ AStar32U4LCD lcd;
 
 void setup()
 {
-  lcd.clear();
-  lcd.print(F("hi"));
-
   // Set up I2C.
   Wire.begin();
 
@@ -30,18 +27,7 @@ void setup()
 
   // Set the Tic's current position to 0, so that when we command
   // it to move later, it will move a predictable amount.
-trySetPos:
-  lcd.gotoXY(0, 0); lcd.print(F("setpos  "));
   tic.haltAndSetPosition(0);
-  if (tic.getLastError())
-  {
-    lcd.gotoXY(0, 0); lcd.print(F("E setpos"));
-    lcd.gotoXY(0, 1); lcd.print(tic.getLastError());
-    ledRed(1);
-    delay(1000);
-    goto trySetPos;
-    while (1);
-  }
 
   // Tells the Tic that it is OK to start driving the motor.  The
   // Tic's safe-start feature helps avoid unexpected, accidental
@@ -49,15 +35,7 @@ trySetPos:
   // drive the motor again until it receives the Exit Safe Start
   // command.  The safe-start feature can be disbled in the Tic
   // Control Center.
-  //lcd.gotoXY(0, 0); lcd.print(F("exit ss "));
   tic.exitSafeStart();
-  if (tic.getLastError())
-  {
-    //lcd.gotoXY(0, 0); lcd.print(F("E ess   "));
-    //lcd.gotoXY(0, 1); lcd.print(tic.getLastError());
-    //ledRed(1);
-    while (1);
-  }
 }
 
 // Sends a Reset Command Timeout command to the Tic.  We must
@@ -71,17 +49,15 @@ void resetCommandTimeout()
 }
 
 // Delays for the specified number of milliseconds while
-// resetting the Tic.
-void delayWithResetCommandTimeout(uint32_t ms)
+// resetting the Tic's command timeout so that its movement does
+// not get interrupted.
+void delayWhileMoving(uint32_t ms)
 {
   uint32_t start = millis();
   do
   {
-    lcd.gotoXY(0, 0); lcd.print(F("delay   "));
     resetCommandTimeout();
-  }
-  while ((uint32_t)(millis() - start) <= ms);
-  ///lcd.gotoXY(0, 0); lcd.print(F("delayed "));
+  } while ((uint32_t)(millis() - start) <= ms);
 }
 
 // Polls the Tic, waiting for it to reach the specified target
@@ -89,42 +65,23 @@ void delayWithResetCommandTimeout(uint32_t ms)
 // probably go into safe-start mode and never reach its target
 // position, so this function will loop infinitely.  If that
 // happens, you will need to reset your Arduino.
-void waitForTargetPositionOrError(int32_t targetPosition)
+void waitForPosition(int32_t targetPosition)
 {
   do
   {
-    //lcd.gotoXY(0, 0); lcd.print(F("wait    "));
     resetCommandTimeout();
-    //lcd.gotoXY(0, 0); lcd.print(F("waitp   ");
   } while (tic.getCurrentPosition() != targetPosition);
-  //lcd.gotoXY(0, 0); lcd.print(F("waited  "));
 }
-
-int32_t position = 0;
 
 void loop()
 {
-  if (position <= 0) { position = 100; }
-  else { position = -100; }
-
-  // Tell the Tic to move to position 100, and delay for 2500 ms
-  // to give it time to get there.
-trySetTar:
-  lcd.gotoXY(0, 0); lcd.print(F("+100    "));
+  // Tell the Tic to move to position 100, and wait until it gets
+  // there.
   tic.setTargetPosition(100);
-  if (tic.getLastError())
-  {
-    lcd.gotoXY(0, 0); lcd.print(F("E settar"));
-    lcd.gotoXY(0, 1); lcd.print(tic.getLastError());
-    ledRed(1);
-    delay(1000);
-    goto trySetTar;
-    while (1);
-  }
-  delayWithResetCommandTimeout(2500);
+  waitForPosition(100);
 
-  // Tell the Tic to move to position -100, and wait until it
-  // gets there.
+  // Tell the Tic to move to position -100, and delay for 3000 ms
+  // to give it time to get there.
   tic.setTargetPosition(-100);
-  waitForTargetPositionOrError(-100);
+  delayWhileMoving(3000);
 }

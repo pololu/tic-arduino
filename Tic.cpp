@@ -1,4 +1,5 @@
 #include <Tic.h>
+#include <Arduino.h>
 
 /**** TicSerial ****/
 
@@ -71,7 +72,7 @@ void TicSerial::sendCommandHeader(TicCommand cmd)
   _lastError = 0;
 }
 
-/*** TicI2C ***/
+/**** TicI2C ****/
 
 void TicI2C::commandQuick(TicCommand cmd)
 {
@@ -118,17 +119,24 @@ void TicI2C::getSegment(TicCommand cmd, uint8_t offset,
   if (byteCount != length)
   {
     _lastError = 50;
-
     memset(buffer, 0, length);
+    delayAfterRead();
     return;
   }
 
   _lastError = 0;
-
   uint8_t * ptr = buffer;
   for (uint8_t i = 0; i < length; i++)
   {
     *ptr = Wire.read();
     ptr++;
   }
+  delayAfterRead();
+}
+
+// For reliable I2C operation, the Tic requires the bus to stay idle for 2 ms
+// after any read is completed.
+void TicI2C::delayAfterRead()
+{
+  delay(2);
 }
