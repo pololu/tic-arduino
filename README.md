@@ -59,7 +59,7 @@ serial port are different depending on which Arduino you are using.
 | Arduino Yun           |        No        |     10     |     11     |
 
 ** The Due's serial port is 3.3&nbsp;V, so it should not be directly connected
-to the Maestro's 5&nbsp;V TX line. A voltage divider or level shifter can be
+to the Tic's 5&nbsp;V TX line. A voltage divider or level shifter can be
 used.
 
 ### Tic configuration
@@ -100,7 +100,7 @@ If this does not work, you can manually install the library:
 
 Several example sketches are available that show how to use the library. You can
 access them from the Arduino IDE by opening the "File" menu, selecting
-"Examples", and then selecting "TicMaestro". If you cannot find these
+"Examples", and then selecting "Tic". If you cannot find these
 examples, the library was probably installed incorrectly and you should retry
 the installation instructions above.
 
