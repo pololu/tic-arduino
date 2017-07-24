@@ -9,6 +9,10 @@
 // by clicking "De-energize" in the Tic Control Center, you will
 // need to undo that by clicking "Resume" or power-cycling the
 // Tic.
+//
+// Please see https://github.com/pololu/tic-arduino for details
+// on how to make the connections between the Arduino and the
+// Tic.
 
 #include <Tic.h>
 
