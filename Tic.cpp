@@ -125,7 +125,7 @@ void TicI2C::getSegment(TicCommand cmd, uint8_t offset,
   }
 
   _lastError = 0;
-  uint8_t * ptr = buffer;
+  uint8_t * ptr = (uint8_t *)buffer;
   for (uint8_t i = 0; i < length; i++)
   {
     *ptr = Wire.read();
