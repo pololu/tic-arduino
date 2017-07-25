@@ -18,9 +18,6 @@
 
 TicI2C tic;
 
-#include <AStar32U4.h>
-AStar32U4LCD lcd;
-
 void setup()
 {
   // Set up I2C.
