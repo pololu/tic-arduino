@@ -10,6 +10,7 @@
 
 #pragma once
 
+#include <Arduino.h>
 #include <Stream.h>
 #include <Wire.h>
 
