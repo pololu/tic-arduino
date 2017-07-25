@@ -31,9 +31,6 @@ To control the Tic using I2C, you should connect your board's SCL pin to the
 Tic's SCL pin, connect your board's SDA pin to the Tic's SDA pin, and connect
 your board's GND pin to one of the Tic's GND pins.
 
-If you are not sure whether to use serial or I2C, we recommend using I2C because
-the connections are simpler and there is no baud rate to worry about.
-
 ### Serial connections
 
 To control the Tic asynchronous TTL serial, you need to at least connect your
