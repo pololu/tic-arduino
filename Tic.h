@@ -1,10 +1,30 @@
+// Copyright (C) Pololu Corporation.  See LICENSE.txt for details.
+
+/// \file Tic.h
+///
+/// This is the main header file for the Tic Stepper Motor Controller library
+/// for Arduino.
+///
+/// For more information about the library, see the main repository at:
+/// https://github.com/pololu/tic-arduino
+
 #pragma once
 
 #include <Stream.h>
 #include <Wire.h>
 
-uint8_t const TicCurrentUnits = 32;
+/// This constant is used by the library to convert between milliamps and the
+/// Tic's native current unit, which is 32 mA.
+const uint8_t TicCurrentUnits = 32;
 
+/// This is used to represent a null or missing value for some of the Tic's
+/// 16-bit input variables.
+const uint16_t TicInputNull = 0xFFFF;
+
+/// This enum defines the Tic's error bits.  See the "Error handling" section of
+/// the Tic user's guide for more information about what these errors mean.
+///
+/// See TicBase::getErrorStatus() and TicBase::getErrorsOccurred().
 enum class TicError
 {
   IntentionallyDeenergized = 0,
@@ -23,6 +43,9 @@ enum class TicError
   EncoderSkip              = 20,
 };
 
+/// This enum defines the Tic command codes which are used for its serial, I2C,
+/// and USB interface.  These codes are used by the library and you should not
+/// need to use them.
 enum class TicCommand
 {
   SetTargetPosition                 = 0xE0,
@@ -48,16 +71,23 @@ enum class TicCommand
   GetSetting                        = 0xA8,
 };
 
+/// This enum defines the possible operation states for the Tic.
+///
+/// See TicBase::getOperationState().
 enum class TicOperationState
 {
-  Reset = 0,
-  Deenergized = 2,
-  SoftError = 4,
+  Reset             = 0,
+  Deenergized       = 2,
+  SoftError         = 4,
   WaitingForErrLine = 6,
-  StartingUp = 8,
-  Normal = 10,
+  StartingUp        = 8,
+  Normal            = 10,
 };
 
+/// This enum defines the possible planning modes for the Tic's step generation
+/// code.
+///
+/// See TicBase::getPlanningMode().
 enum class TicPlanningMode
 {
   Off            = 0,
@@ -65,6 +95,24 @@ enum class TicPlanningMode
   TargetVelocity = 2,
 };
 
+/// This enum defines the possible causes of a full microcontroller reset for
+/// the Tic.
+///
+/// See TicBase::getDeviceReset().
+enum class TicReset
+{
+  PowerUp        = 0,
+  Brownout       = 1,
+  ResetLine      = 2,
+  Watchdog       = 4,
+  Software       = 8,
+  StackOverflow  = 16,
+  StackUnderflow = 32,
+};
+
+/// This enum defines the possible decay modes.
+///
+/// See TicBase::getDecayMode() and TicBase::setDecayMode().
 enum class TicDecayMode
 {
   Mixed  = 0,
@@ -72,6 +120,9 @@ enum class TicDecayMode
   Fast   = 2,
 };
 
+/// This enum defines the possible step modes.
+///
+/// See TicBase::getStepMode() and TicBase::setStepMode().
 enum class TicStepMode
 {
   Full    = 0,
@@ -85,6 +136,7 @@ enum class TicStepMode
   Microstep32 = 5,
 };
 
+/// This enum defines the Tic's control pins.
 enum class TicPin
 {
   SCL = 0,
@@ -94,6 +146,9 @@ enum class TicPin
   RC  = 4,
 };
 
+/// This enum defines the Tic's pin states.
+///
+/// See TicBase::getPinState().
 enum class TicPinState
 {
   HighImpedance = 0,
@@ -102,134 +157,425 @@ enum class TicPinState
   OutputHigh    = 3,
 };
 
+/// This enum defines the possible states of the Tic's main input.
 enum class TicInputState
 {
+  /// The input is not ready yet.  More samples are needed, or a command has not
+  /// been received yet.
   NotReady = 0,
+
+  /// The input is invalid.
   Invalid = 1,
+
+  /// The input is valid and is telling the Tic to halt the motor.
   Halt = 2,
+
+  /// The input is valid and is telling the Tic to go to a target position,
+  /// which you can get with TicBase::getInputAfterScaling().
   Position = 3,
+
+  /// The input is valid and is telling the Tic to go to a target velocity,
+  /// which you can get with TicBase::getInputAfterScaling().
   Velocity = 4,
 };
 
+/// This enum defines the bits in the Tic's Misc Flags 1 register.  You should
+/// not need to use this directly.  See TicBase::getEnergized() and
+/// TicBase::getPositionUncertain().
 enum class TicMiscFlags1
 {
   Energized = 0,
   PositionUncertain = 1,
 };
 
+/// This is a base class used to represent a connection to a Tic.  This class
+/// provides high-level functions for sending commands to the Tic and reading
+/// data from it.
+///
+/// See the subclasses of this class, TicSerial and TicI2C.
 class TicBase
 {
 public:
+  /// Sets the target position of the Tic, in microsteps.
+  ///
+  /// Example usage:
+  /// ```
+  /// tic.setTargetPosition(100);
+  /// ```
+  ///
+  /// This function sends a Set Target Position to the Tic.  If the Control mode
+  /// is set to Serial/I2C/USB, the Tic will start moving the motor to reach the
+  /// target position.  If the control mode is something other than Serial, this
+  /// command will be silently ignored.
+  ///
+  /// See also getTargetPosition().
   void setTargetPosition(int32_t position)
   {
     commandW32(TicCommand::SetTargetPosition, position);
   }
 
+  /// Sets the target velocity of the Tic, in microsteps per 10000 seconds.
+  ///
+  /// Example usage:
+  /// ```
+  /// tic.setTargetVelocity(-1800000);  // -180 steps per second
+  /// ```
+  ///
+  /// This function sends a Set Target Velocity command to the Tic.  If the
+  /// Control mode is set to Serial/I2C/USB, the Tic will start accelerating or
+  /// decelerating to reach the target velocity.
+  ///
+  /// If the control mode is something other than Serial, this command will be
+  /// silently ignored.
+  ///
+  /// See also getTargetVelocity().
   void setTargetVelocity(int32_t velocity)
   {
     commandW32(TicCommand::SetTargetVelocity, velocity);
   }
 
+  /// Stops the motor abruptly without respecting the deceleration limit and
+  /// sets the "Current position" variable, which represents where the Tic
+  /// currently thinks the motor's output is.
+  ///
+  /// Example usage:
+  /// ```
+  /// tic.haltAndSetPosition(0);
+  /// ```
+  ///
+  /// This function sends a Halt and Set Position command to the Tic.  Besides
+  /// stopping the motor and setting the current position, this command also
+  /// clears the "Learn position later" flag, sets the "Input state" to "halt",
+  /// and clears the "Input after scaling" variable.
+  ///
+  /// If the control mode is something other than Serial, this command will
+  /// be silently ignored.
   void haltAndSetPosition(int32_t position)
   {
     commandW32(TicCommand::HaltAndSetPosition, position);
   }
 
+  /// Stops the motor abruptly without respecting the deceleration limit.
+  ///
+  /// Example usage:
+  /// ```
+  /// tic.haltAndHold();
+  /// ```
+  ///
+  /// This function sends a Halt and Hold command to the Tic.  Besides stopping
+  /// the motor, this command also sets the "Input state" to "halt", and clears
+  /// the "Input after scaling" variable.
+  ///
+  /// If the control mode is something other than Serial/I2C/USB, ths
+  /// command will be silently ignored.
+  ///
+  /// See also tic_deenergize().
   void haltAndHold()
   {
     commandQuick(TicCommand::HaltAndHold);
   }
 
+  /// Prevents the "Command timeout" error from happening for some time.
+  ///
+  /// Example usage:
+  /// ```
+  /// tic.resetCommandTimeout();
+  /// ```
+  ///
+  /// This function sends a Reset Command Timeout command to the Tic.
   void resetCommandTimeout()
   {
     commandQuick(TicCommand::ResetCommandTimeout);
   }
 
+  /// Deenergizes the stepper motor coils.
+  ///
+  /// Example usage:
+  /// ```
+  /// tic.deenergize();
+  /// ```
+  ///
+  /// This function sends a Deenergize command to the Tic, causing it to disable
+  /// its stepper motor driver.  The motor will stop moving and consuming power.
+  /// The Tic will also set the "Intentionally de-energized" error bit, turn on
+  /// its red LED, and drive its ERR line high.
+  ///
+  /// Note that the Energize command, which can be sent with energize(), will
+  /// undo the effect of this command and could make the system start up again.
+  ///
+  /// See also haltAndHold().
   void deenergize()
   {
     commandQuick(TicCommand::Deenergize);
   }
 
+  /// Sends the Energize command.
+  ///
+  /// Example usage:
+  /// ```
+  /// tic.energize();
+  /// ```
+  ///
+  /// This function sends an Energize command to the Tic, clearing the
+  /// "Intentionally de-energized" error bit.  If there are no other errors,
+  /// this allows the system to start up.
   void energize()
   {
     commandQuick(TicCommand::Energize);
   }
 
+  /// Sends the Exit Safe Start command.
+  ///
+  /// Example usage:
+  /// ```
+  /// tic.exitSafeStart();
+  /// ```
+  ///
+  /// In Serial/I2C/USB control mode, this command causes the Safe Start
+  /// Violation error to be cleared for 200 ms.  If there are no other errors,
+  /// this allows the system to start up.
   void exitSafeStart()
   {
     commandQuick(TicCommand::ExitSafeStart);
   }
 
+  /// Sends the Enter Safe Start command.
+  ///
+  /// Example usage:
+  /// ```
+  /// tic.enterSafeStart();
+  /// ```
+  ///
+  /// This command has no effect if safe-start is disabled in the Tic's settings.
+  ///
+  /// In Serial/I2C/USB control mode, this command causes the Tic to stop the
+  /// motor and set its Safe Start Violation error bit.  An Exit Safe Start
+  /// command is required before the Tic will move the motor again.
+  ///
+  /// See the Tic user's guide for information about what this command does in
+  /// the other control modes.
   void enterSafeStart()
   {
     commandQuick(TicCommand::EnterSafeStart);
   }
 
+  /// Sends the Reset command.
+  ///
+  /// Example usage:
+  /// ```
+  /// tic.reset();
+  /// ```
+  ///
+  /// This command makes the Tic forget most parts of its current state.  For
+  /// more information, see the Tic user's guide.
   void reset()
   {
     commandQuick(TicCommand::Reset);
+
+    // The Tic's serial and I2C interfaces will be unreliable for a brief period
+    // after the Tic receives the Reset command, so we delay 10 ms here.
+    delay(10);
   }
 
+  /// Attempts to clear a motor driver error.
+  ///
+  /// Example usage:
+  /// ```
+  /// tic.clearDriverError();
+  /// ```
+  ///
+  /// This function sends a Clear Driver Error command to the Tic.  For more
+  /// information, see the Tic user's guide.
   void clearDriverError()
   {
     commandQuick(TicCommand::ClearDriverError);
   }
 
-  void setSpeedMax(uint32_t speed)
+  /// Temporarily sets the maximum speed, in units of steps per 10000 seconds.
+  ///
+  /// Example usage:
+  /// ```
+  /// tic.setMaxSpeed(5550000);  // 555 steps per second
+  /// ```
+  ///
+  /// This function sends a Set Max Speed command to the Tic.  For more
+  /// information, see the Tic user's guide.
+  ///
+  /// See also getMaxSpeed().
+  void setMaxSpeed(uint32_t speed)
   {
     commandW32(TicCommand::SetSpeedMax, speed);
   }
 
+  /// Temporarily sets the starting speed, in units of steps per 10000 seconds.
+  ///
+  /// Example usage:
+  /// ```
+  /// tic.setStartingSpeed(500000);  // 50 steps per second
+  /// ```
+  ///
+  /// This function sends a Set Starting Speed command to the Tic.  For more
+  /// information, see the Tic user's guide.
+  ///
+  /// See also getStartingSpeed().
   void setStartingSpeed(uint32_t speed)
   {
     commandW32(TicCommand::SetStartingSpeed, speed);
   }
 
-  void setAccelMax(uint32_t accel)
+  /// Temporarily sets the maximum acceleration, in units of steps per second
+  /// per 100 seconds.
+  ///
+  /// Example usage:
+  /// ```
+  /// tic.setMaxAccel(10000);  // 100 steps per second per second
+  /// ```
+  ///
+  /// This function sends a Set Max Acceleration command to the Tic.  For more
+  /// information, see the Tic user's guide.
+  ///
+  /// See also getMaxAccel().
+  void setMaxAccel(uint32_t accel)
   {
     commandW32(TicCommand::SetAccelMax, accel);
   }
 
-  void setDecelMax(uint32_t decel)
+  /// Temporarily sets the maximum deceleration, in units of steps per second
+  /// per 100 seconds.
+  ///
+  /// Example usage:
+  /// ```
+  /// tic.setMaxDecel(10000);  // 100 steps per second per second
+  /// ```
+  ///
+  /// This function sends a Set Max Deceleration command to the Tic.  For more
+  /// information, see the Tic user's guide.
+  ///
+  /// See also getMaxDecel().
+  void setMaxDecel(uint32_t decel)
   {
     commandW32(TicCommand::SetDecelMax, decel);
   }
 
+  /// Temporarily sets the stepper motor's step mode, which defines how many
+  /// microsteps correspond to one full step.
+  ///
+  /// Example usage:
+  /// ```
+  /// tic.setStepMode(TicStepMode::Microstep8);
+  /// ```
+  ///
+  /// This function sends a Set Step Mode command to the Tic.  For more
+  /// information, see the Tic user's guide.
+  ///
+  /// See also getStepMode().
   void setStepMode(TicStepMode mode)
   {
     commandW7(TicCommand::SetStepMode, (uint8_t)mode);
   }
 
+  /// Temporarily sets the stepper motor coil current limit in milliamps.
+  ///
+  /// Example usage:
+  /// ```
+  /// tic.setCurrentLimit(256);  // 256 mA
+  /// ```
+  ///
+  /// This function sends a Set Current Limit command to the Tic.  For more
+  /// information about this command and how to choose a good current limit, see
+  /// the Tic user's guide.
+  ///
+  /// See also getCurrentLimit().
   void setCurrentLimit(uint16_t limit)
   {
     commandW7(TicCommand::SetCurrentLimit, limit / TicCurrentUnits);
   }
 
+  /// Temporarily sets the stepper motor driver's decay mode.
+  ///
+  /// Example usage:
+  /// ```
+  /// tic.setDecayMode(TicDecayMode::Slow);
+  /// ```
+  ///
+  /// The decay modes are documented in the Tic user's guide.
+  ///
+  /// See also getDecayMode().
   void setDecayMode(TicDecayMode mode)
   {
     commandW7(TicCommand::SetDecayMode, (uint8_t)mode);
   }
 
+  /// Gets the Tic's current operation state, which indicates whether it is
+  /// operating normally or in an error state.
+  ///
+  /// Example usage:
+  /// ```
+  /// if (tic.getOperationState() != TicOperationState::Normal)
+  /// {
+  ///   // There is an error, or the Tic is starting up.
+  /// }
+  /// ```
+  ///
+  /// For more information, see the "Error handling" section of the Tic user's
+  /// guide.
   TicOperationState getOperationState()
   {
     return (TicOperationState)getVar8(VarOffset::OperationState);
   }
 
+  /// Returns true if the motor driver is energized (trying to send current to
+  /// its outputs).
   bool getEnergized()
   {
     return getVar8(VarOffset::MiscFlags1) >> (uint8_t)TicMiscFlags1::Energized & 1;
   }
 
+  /// Gets a flag that indicates whether there has been external confirmation that
+  /// the value of the Tic's "Current position" variable is correct.
+  ///
+  /// For more information, see the "Error handling" section of the Tic user's
+  /// guide.
   bool getPositionUncertain()
   {
     return getVar8(VarOffset::MiscFlags1) >> (uint8_t)TicMiscFlags1::PositionUncertain & 1;
   }
 
+  /// Gets the errors that are currently stopping the motor.
+  ///
+  /// Each bit in the returned register represents a different error.  The bits
+  /// are defined in ::TicError enum.
+  ///
+  /// Example usage:
+  /// ```
+  /// uint16_t errors = tic.getErrorStatus();
+  /// if (errors & (1 << (uint8_t)TicError::LowVin))
+  /// {
+  ///   // handle loss of power
+  /// }
+  /// ```
   uint16_t getErrorStatus()
   {
     return getVar16(VarOffset::ErrorStatus);
   }
 
+  /// Gets the errors that have occurred since the last time this function was called.
+  ///
+  /// Note that the Tic Control Center constantly clears the bits in this
+  /// register, so if you are running the Tic Control Center then you will not
+  /// be able to reliably detect errors with this function.
+  ///
+  /// Each bit in the returned register represents a different error.  The bits
+  /// are defined in ::TicError enum.
+  ///
+  /// Example usage:
+  /// ```
+  /// uint32_t errors = tic.getErrorsOccurred();
+  /// if (errors & (1 << (uint8_t)TicError::MotorDriverError))
+  /// {
+  ///   // handle a motor driver error
+  /// }
+  /// ```
   uint32_t getErrorsOccurred()
   {
     uint32_t result;
@@ -238,152 +584,417 @@ public:
     return result;
   }
 
+  /// Returns the current planning mode for the Tic's step generation code.
+  ///
+  /// This tells us whether the Tic is sending steps, and if it is sending
+  /// steps, tells us whether it is in Target Position or Target Velocity mode.
+  ///
+  /// Example usage:
+  /// ```
+  /// if (tic.getPlanningMode() == TicPlanningMode::TargetPosition)
+  /// {
+  ///     // The Tic is moving the stepper motor to a target position, or has
+  ///     // already reached it and is at rest.
+  /// }
+  /// ```
   TicPlanningMode getPlanningMode()
   {
     return (TicPlanningMode)getVar8(VarOffset::PlanningMode);
   }
 
+  /// Gets the target position, in microsteps.
+  ///
+  /// This is only relevant if the planning mode from getPlanningMode() is
+  /// TicPlanningMode::Position.
+  ///
+  /// See also setTargetPosition().
   int32_t getTargetPosition()
   {
     return getVar32(VarOffset::TargetPosition);
   }
 
+  /// Gets the target velocity, in microsteps per 10000 seconds.
+  ///
+  /// This is only relevant if the planning mode from getPlanningMode() is
+  /// TicPlanningMode::Velocity.
+  ///
+  /// See also setTargetVelocity().
   int32_t getTargetVelocity()
   {
     return getVar32(VarOffset::TargetVelocity);
   }
 
+  /// Gets the current maximum speed, in microsteps per 10000 seconds.
+  ///
+  /// This is the current value, which could differ from the value in the Tic's
+  /// settings.
+  ///
+  /// See also setMaxSpeed().
+  uint32_t getMaxSpeed()
+  {
+    return getVar32(VarOffset::SpeedMax);
+  }
+
+  /// Gets the starting speed in microsteps per 10000 seconds.
+  ///
+  /// This is the current value, which could differ from the value in the
+  /// Tic's settings.
+  ///
+  /// Example usage:
+  /// ```
+  /// uint32_t startingSpeed = tic.getStartingSpeed();
+  /// ```
+  ///
+  /// See also setStartingSpeed().
   uint32_t getStartingSpeed()
   {
     return getVar32(VarOffset::StartingSpeed);
   }
 
-  uint32_t getSpeedMax()
-  {
-    return getVar32(VarOffset::SpeedMax);
-  }
-
-  uint32_t getDecelMax()
-  {
-    return getVar32(VarOffset::DecelMax);
-  }
-
-  uint32_t getAccelMax()
+  /// Gets the maximum acceleration, in microsteps per second per 100 seconds.
+  ///
+  /// This is the current value, which could differ from the value in the Tic's
+  /// settings.
+  ///
+  /// Example usage:
+  /// ```
+  /// uint32_t accelMax = tic.getMaxAccel();
+  /// ```
+  ///
+  /// See also setMaxAccel().
+  uint32_t getMaxAccel()
   {
     return getVar32(VarOffset::AccelMax);
   }
 
+  /// Gets the maximum deceleration, in microsteps per second per 100 seconds.
+  ///
+  /// This is the current value, which could differ from the value in the Tic's
+  /// settings.
+  ///
+  /// Example usage:
+  /// ```
+  /// uint32_t decelMax = tic.getMaxDecel();
+  /// ```
+  ///
+  /// See also setMaxDecel().
+  uint32_t getMaxDecel()
+  {
+    return getVar32(VarOffset::DecelMax);
+  }
+
+  /// Gets the current position of the stepper motor, in microsteps.
+  ///
+  /// Note that this just tracks steps that the Tic has commanded the stepper
+  /// driver to take; it could be different from the actual position of the
+  /// motor for various reasons.
+  ///
+  /// For an example of how to use this this, see the SerialPositionControl
+  /// example or the I2CPositionControl exmaple.
+  ///
+  /// See also haltAndSetPosition().
   int32_t getCurrentPosition()
   {
     return getVar32(VarOffset::CurrentPosition);
   }
 
+  /// Gets the current velocity of the stepper motor, in microsteps per 10000
+  /// seconds.
+  ///
+  /// Note that this is just the velocity used in the Tic's step planning
+  /// algorithms, and it might not correspond to the actual velocity of the
+  /// motor for various reasons.
+  ///
+  /// Example usage:
+  /// ```
+  /// int32_t velocity = tic.getCurrentVelocity();
+  /// ```
   int32_t getCurrentVelocity()
   {
     return getVar32(VarOffset::CurrentVelocity);
   }
 
-  uint32_t getTimeSinceLastStep()
-  {
-    return getVar32(VarOffset::TimeSinceLastStep);
-  }
-
+  /// Gets the acting target position, in microsteps.
+  ///
+  /// This is a variable used in the Tic's target position step planning
+  /// algorithm, and it could be invalid while the motor is stopped.
+  ///
+  /// This is mainly intended for getting insight into how the Tic's algorithms
+  /// work or troubleshooting issues, and most people should not use this.
   uint32_t getActingTargetPosition()
   {
     return getVar32(VarOffset::ActingTargetPosition);
   }
 
-  uint8_t getDeviceReset()
+  /// Gets the time since the last step, in timer ticks.
+  ///
+  /// Each timer tick represents one third of a microsecond.  The Tic only
+  /// updates this variable every 5 milliseconds or so, and it could be invalid
+  /// while the motor is stopped.
+  ///
+  /// This is mainly intended for getting insight into how the Tic's algorithms
+  /// work or troubleshooting issues, and most people should not use this.
+  uint32_t getTimeSinceLastStep()
   {
-    return getVar8(VarOffset::DeviceReset);
+    return getVar32(VarOffset::TimeSinceLastStep);
   }
 
+  /// Gets the cause of the controller's last full microcontroller reset.
+  ///
+  /// Example usage:
+  /// ```
+  /// if (tic.getDeviceReset() == TicReset::Brownout)
+  /// {
+  ///   // There was a brownout reset; the power supply could not keep up.
+  /// }
+  /// ```
+  ///
+  /// The Reset command (reset()) does not affect this variable.
+  TicReset getDeviceReset()
+  {
+    return (TicReset)getVar8(VarOffset::DeviceReset);
+  }
+
+  /// Gets the current measurement of the VIN voltage, in millivolts.
+  ///
+  /// Example usage:
+  /// ```
+  /// uint16_t power = tic.getVinVoltage();
+  /// ```
   uint16_t getVinVoltage()
   {
     return getVar16(VarOffset::VinVoltage);
   }
 
+  /// Gets the time since the last full reset of the Tic's microcontroller, in
+  /// milliseconds.
+  ///
+  /// Example usage:
+  /// ```
+  /// uint32_t upTime = tic.getUpTime();
+  /// ```
+  ///
+  /// A Reset command (reset())does not count.
   uint32_t getUpTime()
   {
     return getVar32(VarOffset::UpTime);
   }
 
+  /// Gets the raw encoder count measured from the Tic's RX and TX lines.
+  ///
+  /// Example usage:
+  /// ```
+  /// int32_t encoderPosition = getEncoderPosition();
+  /// ```
   int32_t getEncoderPosition()
   {
     return getVar32(VarOffset::EncoderPosition);
   }
 
+  /// Gets the raw pulse width measured on the Tic's RC input, in units of
+  /// twelfths of a microsecond.
+  ///
+  /// Returns TicInputNull if the RC input is missing or invalid.
+  ///
+  /// Example usage:
+  /// ```
+  /// uint16_t pulseWidth = tic.getRCPulseWidth();
+  /// if (pulseWidth != TicInputNull && pulseWidth > 18000)
+  /// {
+  ///   // Pulse width is greater than 1500 microseconds.
+  /// }
+  /// ```
   uint16_t getRCPulseWidth()
   {
     return getVar16(VarOffset::RCPulseWidth);
   }
 
+  /// Gets the analog reading from the specified pin.
+  ///
+  /// The reading is left-justified, so 0xFFFF represents a voltage equal to the
+  /// Tic's 5V pin (approximately 4.8 V).
+  ///
+  /// Returns TicInputNull if the analog reading is disabled or not ready.
+  ///
+  /// Example usage:
+  /// ```
+  /// uint16_t reading = getAnalogReading(TicPin::SDA);
+  /// if (reading != TicInputNull && reading < 32768)
+  /// {
+  ///   // The reading is less than about 2.4 V.
+  /// }
+  /// ```
   uint16_t getAnalogReading(TicPin pin)
   {
     uint8_t offset = VarOffset::AnalogReadingSCL + 2 * (uint8_t)pin;
     return getVar16(offset);
   }
 
-  uint8_t getDigitalReading(TicPin pin)
+  /// Gets a digital reading from the specified pin.
+  ///
+  /// Returns `true` for high and `false` for low.
+  ///
+  /// Example usage:
+  /// ```
+  /// if (tic.getDigitalReading(TicPin::RC))
+  /// {
+  ///   // Something is driving the RC pin high.
+  /// }
+  /// ```
+  bool getDigitalReading(TicPin pin)
   {
     uint8_t readings = getVar8(VarOffset::DigitalReadings);
     return (readings >> (uint8_t)pin) & 1;
   }
 
+  /// Gets the current state of a pin, i.e. what kind of input or output it is.
+  ///
+  /// Note that the state might be misleading if the pin is being used as a
+  /// serial or I2C pin.
+  ///
+  /// Example usage:
+  ///
+  /// ```
+  /// if (tic.getPinState(TicPin::SCL) == TicPinState::OutputHigh)
+  /// {
+  ///   // SCL is driving high.
+  /// }
+  /// ```
   TicPinState getPinState(TicPin pin)
   {
     uint8_t states = getVar8(VarOffset::PinStates);
     return (TicPinState)(states >> (2 * (uint8_t)pin) & 0b11);
   }
 
+  /// Gets the current step mode of the stepper motor.
+  ///
+  /// Example usage:
+  /// ```
+  /// if (tic.getStepMode() == TicStepMode::Microstep8)
+  /// {
+  ///   // The Tic is currently using 1/8 microsteps.
+  /// }
+  /// ```
   TicStepMode getStepMode()
   {
     return (TicStepMode)getVar8(VarOffset::StepMode);
   }
 
+  /// Gets the stepper motor coil current limit in milliamps.
+  ///
+  /// This is the value being used now, which could differ from the value in the
+  /// Tic's settings.
+  ///
+  /// Example usage:
+  /// ```
+  /// uint16_t current = tic.getCurrentLimit();
+  /// ```
+  ///
+  /// See also setCurrentLimit().
   uint16_t getCurrentLimit()
   {
     return getVar8(VarOffset::CurrentLimit) * TicCurrentUnits;
   }
 
+  /// Gets the current decay mode of the stepper motor driver.
+  ///
+  /// Example usage:
+  /// ```
+  /// if (tic.getDecayMode() == TicDecayMode::Slow)
+  /// {
+  ///   // The Tic is in slow decay mode.
+  /// }
+  /// ```
+  ///
+  /// See setDecayMode().
   TicDecayMode getDecayMode()
   {
     return (TicDecayMode)getVar8(VarOffset::DecayMode);
   }
 
+  /// Gets the current state of the Tic's main input.
+  ///
+  /// Example usage:
+  /// ```
+  /// if (tic.getInputState() == TicInputState::Position)
+  /// {
+  ///   // The Tic's input is specifying a target position.
+  /// }
+  /// ```
+  ///
+  /// See TicInputState for more information.
   TicInputState getInputState()
   {
     return (TicInputState)getVar8(VarOffset::InputState);
   }
 
+  /// Gets a variable used in the process that converts raw RC and analog values
+  /// into a motor position or speed.  This is mainly for debugging your input
+  /// scaling settings in an RC or analog mode.
+  ///
+  /// A value of TicInputNull means the input value is not available.
   uint16_t getInputAfterAveraging()
   {
     return getVar16(VarOffset::InputAfterAveraging);
   }
 
+  /// Gets a variable used in the process that converts raw RC and analog values
+  /// into a motor position or speed.  This is mainly for debugging your input
+  /// scaling settings in an RC or analog mode.
+  ///
+  /// A value of TicInputNull means the input value is not available.
   uint16_t getInputAfterHysteresis()
   {
     return getVar16(VarOffset::InputAfterHysteresis);
   }
 
+  /// Gets the value of the Tic's main input after scaling has been applied.
+  ///
+  /// If the input is valid, this number is the target position or target
+  /// velocity specified by the input.
+  ///
+  /// Example usage:
+  /// ```
+  /// if (tic.getInputAfter
+  /// ```
+  ///
+  /// See also getInputState().
   int32_t getInputAfterScaling()
   {
     return getVar32(VarOffset::InputAfterScaling);
   }
 
+  /// Gets a contiguous block of settings from the Tic's EEPROM.
+  ///
+  /// The maximum length that can be fetched is 15 bytes.
+  ///
+  /// Example usage:
+  /// ```
+  /// // Get the Tic's serial device number.
+  /// uint8_t deviceNumber;
+  /// tic.getSetting(7, 1, &deviceNumber);
+  /// ```
+  ///
+  /// This library does not attempt to interpret the settings and say what they
+  /// mean.  If you are interested in how the settings are encoded in the Tic's
+  /// EEPROM, see the settings code here:
+  ///
+  /// https://github.com/pololu/pololu-tic-software
   void getSetting(uint8_t offset, uint8_t length, uint8_t * buffer)
   {
     getSegment(TicCommand::GetSetting, offset, length, buffer);
   }
 
-  // Returns 0 if the last command was successful and non-zero if the last
-  // command had an error.
+  /// Returns 0 if the last communication with the device was successful, and
+  /// non-zero if there was an error.
   uint8_t getLastError()
   {
     return _lastError;
   }
 
 protected:
+  /// Zero if the last communication with the device was successful, non-zero
+  /// otherwise.
   uint8_t _lastError = 0;
 
 private:
@@ -455,22 +1066,51 @@ private:
     uint8_t length, void * buffer);
 };
 
+/// Represents a serial connection to a Tic.
+///
+/// For the high-level commands you can use on this object, see TicBase.
 class TicSerial : public TicBase
 {
 public:
+  /// Creates a new TicSerial object.
+  ///
+  /// The `stream` argument should be a hardware or software serial object.
+  /// This class will store a pointer to it and use it to communicate with the
+  /// Tic.  You should initialize it and set it to use the correct baud rate
+  /// before sending commands with this class.
+  ///
+  /// The `deviceNumber` argument is optional.  If it is omitted or 255, the
+  /// TicSerial object will use the Compact Protocol.  If it is a number between
+  /// 0 and 127, it specifies the device number to use in Pololu Protocol,
+  /// allowing you to control multiple Tic controllers on a single serial bus.
+  ///
+  /// For example, to use the first open hardware serial port to send Compact
+  /// Protocol commands to one Tic, write this at the top of your sketch:
+  /// ```
+  /// TicSerial tic(SERIAL_PORT_HARDWARE_OPEN);
+  /// ```
+  ///
+  /// For example, to use a SoftwareSerial port and send Pololu Protocol
+  /// commands to two different Tic controllers, write this at the top of your sketch:
+  ///
+  /// ```
+  /// #include <SoftwareSerial.h>
+  /// SoftwareSerial ticSerial(10, 11);
+  /// TicSerial tic1(ticSerial, 14);
+  /// TicSerial tic2(ticSerial, 15);
+  /// ```
   TicSerial(Stream & stream, uint8_t deviceNumber = 255) :
     _stream(&stream),
     _deviceNumber(deviceNumber)
   {
   }
 
+  /// Gets the serial device number specified in the constructor.
   uint8_t getDeviceNumber() { return _deviceNumber; }
 
-  void getSetting(uint8_t offset, uint8_t length, uint8_t * buf);
-
 private:
-  Stream * const _stream;
-  uint8_t const _deviceNumber;
+  const Stream * _stream;
+  const uint8_t _deviceNumber;
 
   void commandQuick(TicCommand cmd) { sendCommandHeader(cmd); }
   void commandW32(TicCommand cmd, uint32_t val);
@@ -483,18 +1123,28 @@ private:
   void serialW7(uint8_t val) { _stream->write(val & 0x7F); }
 };
 
+/// Represents an I2C connection to a Tic.
+///
+/// For the high-level commands you can use on this object, see TicBase.
 class TicI2C : public TicBase
 {
 public:
-  // TODO: support Wire1 on Arduino Due?
+  /// Creates a new TicI2C object that will use the `Wire` object to communicate
+  /// with the Tic over I2C.
+  ///
+  /// The `address` parameter specifies the 7-bit I2C address to use, and it
+  /// must match the Tic's "Device number" setting.  It defaults to 14.
   TicI2C(uint8_t address = 14) : _address(address)
   {
   }
 
+  // TODO: support Wire1 on Arduino Due?
+
+  /// Gets the I2C address specified in the constructor.
   uint8_t getAddress() { return _address; }
 
 private:
-  uint8_t const _address;
+  const uint8_t _address;
 
   void commandQuick(TicCommand cmd);
   void commandW32(TicCommand cmd, uint32_t val);
