@@ -39,10 +39,6 @@ void setup()
   // Give the Tic some time to start up.
   delay(20);
 
-  // Set the Tic's current position to 0, so that when we command
-  // it to move later, it will move a predictable amount.
-  tic.haltAndSetPosition(0);
-
   // Tells the Tic that it is OK to start driving the motor.  The
   // Tic's safe-start feature helps avoid unexpected, accidental
   // movement of the motor: if an error happens, the Tic will not
