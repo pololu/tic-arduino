@@ -1,7 +1,7 @@
 # Tic Stepper Motor Controller library for Arduino
 
-Version: 1.0.0<br>
-Release date: 2017-07-24<br>
+Version: 1.0.1<br>
+Release date: 2017-07-25<br>
 [![Build Status](https://travis-ci.org/pololu/tic-arduino.svg?branch=master)](https://travis-ci.org/pololu/tic-arduino)<br>
 [www.pololu.com](https://www.pololu.com/)
 
@@ -121,4 +121,5 @@ For complete documentation of this library, see [the tic-arduino documentation][
 
 ## Version history
 
+* 1.0.1 (2017-07-25): Removed the call to `haltAndSetPosition` in the `SerialSpeedControl` example because it is not necessary.
 * 1.0.0 (2017-07-24): Original release.
