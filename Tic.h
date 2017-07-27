@@ -246,7 +246,7 @@ public:
   ///
   /// This function sends a Halt and Set Position command to the Tic.  Besides
   /// stopping the motor and setting the current position, this command also
-  /// clears the "Learn position later" flag, sets the "Input state" to "halt",
+  /// clears the "Postion uncertain" flag, sets the "Input state" to "halt",
   /// and clears the "Input after scaling" variable.
   ///
   /// If the control mode is something other than Serial, this command will
@@ -264,8 +264,9 @@ public:
   /// ```
   ///
   /// This function sends a Halt and Hold command to the Tic.  Besides stopping
-  /// the motor, this command also sets the "Input state" to "halt", and clears
-  /// the "Input after scaling" variable.
+  /// the motor, this command also sets the "Position uncertain" flag (because
+  /// the abrupt stop might cause steps to be missed), sets the "Input state" to
+  /// "halt", and clears the "Input after scaling" variable.
   ///
   /// If the control mode is something other than Serial/I2C/USB, ths
   /// command will be silently ignored.
@@ -298,11 +299,14 @@ public:
   ///
   /// This function sends a Deenergize command to the Tic, causing it to disable
   /// its stepper motor driver.  The motor will stop moving and consuming power.
-  /// The Tic will also set the "Intentionally de-energized" error bit, turn on
-  /// its red LED, and drive its ERR line high.
+  /// This command sets the "Position uncertain" flag (because the Tic is no
+  /// longer in control of the motor's position). The Tic will also set the
+  /// "Intentionally de-energized" error bit, turn on its red LED, and drive its
+  /// ERR line high.
   ///
   /// Note that the Energize command, which can be sent with energize(), will
-  /// undo the effect of this command and could make the system start up again.
+  /// undo the effect of this command (except it will leave the "Position
+  /// uncertain" flag set) and could make the system start up again.
   ///
   /// See also haltAndHold().
   void deenergize()
