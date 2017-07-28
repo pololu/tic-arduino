@@ -299,10 +299,10 @@ public:
   ///
   /// This function sends a Deenergize command to the Tic, causing it to disable
   /// its stepper motor driver.  The motor will stop moving and consuming power.
-  /// This command sets the "Position uncertain" flag (because the Tic is no
-  /// longer in control of the motor's position). The Tic will also set the
-  /// "Intentionally de-energized" error bit, turn on its red LED, and drive its
-  /// ERR line high.
+  /// The Tic will set the "Intentionally de-energized" error bit, turn on its
+  /// red LED, and drive its ERR line high.  This command also sets the
+  /// "Position uncertain" flag (because the Tic is no longer in control of the
+  /// motor's position).
   ///
   /// Note that the Energize command, which can be sent with energize(), will
   /// undo the effect of this command (except it will leave the "Position
