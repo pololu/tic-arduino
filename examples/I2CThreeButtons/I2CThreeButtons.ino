@@ -79,7 +79,7 @@ void loop()
     // Decelerate to velocity zero.
     tic.setTargetVelocity(0);
     tic.exitSafeStart();
-    mode = Mode::Off;
+    mode = Mode::Velocity;
   }
   else if (buttonB.isPressed())
   {
