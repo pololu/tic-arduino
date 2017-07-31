@@ -204,10 +204,10 @@ public:
   /// tic.setTargetPosition(100);
   /// ```
   ///
-  /// This function sends a Set Target Position to the Tic.  If the Control mode
-  /// is set to Serial/I2C/USB, the Tic will start moving the motor to reach the
-  /// target position.  If the control mode is something other than Serial, this
-  /// command will be silently ignored.
+  /// This function sends a "Set target position" to the Tic.  If the Control
+  /// mode is set to Serial/I2C/USB, the Tic will start moving the motor to
+  /// reach the target position.  If the control mode is something other than
+  /// Serial, this command will be silently ignored.
   ///
   /// See also getTargetPosition().
   void setTargetPosition(int32_t position)
@@ -222,7 +222,7 @@ public:
   /// tic.setTargetVelocity(-1800000);  // -180 steps per second
   /// ```
   ///
-  /// This function sends a Set Target Velocity command to the Tic.  If the
+  /// This function sends a "Set target velocity" command to the Tic.  If the
   /// Control mode is set to Serial/I2C/USB, the Tic will start accelerating or
   /// decelerating to reach the target velocity.
   ///
@@ -244,10 +244,10 @@ public:
   /// tic.haltAndSetPosition(0);
   /// ```
   ///
-  /// This function sends a Halt and Set Position command to the Tic.  Besides
+  /// This function sends a "Halt and set position" command to the Tic.  Besides
   /// stopping the motor and setting the current position, this command also
-  /// clears the "Postion uncertain" flag, sets the "Input state" to "halt",
-  /// and clears the "Input after scaling" variable.
+  /// clears the "Postion uncertain" flag, sets the "Input state" to "halt", and
+  /// clears the "Input after scaling" variable.
   ///
   /// If the control mode is something other than Serial, this command will
   /// be silently ignored.
@@ -263,7 +263,7 @@ public:
   /// tic.haltAndHold();
   /// ```
   ///
-  /// This function sends a Halt and Hold command to the Tic.  Besides stopping
+  /// This function sends a "Halt and hold" command to the Tic.  Besides stopping
   /// the motor, this command also sets the "Position uncertain" flag (because
   /// the abrupt stop might cause steps to be missed), sets the "Input state" to
   /// "halt", and clears the "Input after scaling" variable.
@@ -284,20 +284,20 @@ public:
   /// tic.resetCommandTimeout();
   /// ```
   ///
-  /// This function sends a Reset Command Timeout command to the Tic.
+  /// This function sends a "Reset command timeout" command to the Tic.
   void resetCommandTimeout()
   {
     commandQuick(TicCommand::ResetCommandTimeout);
   }
 
-  /// Deenergizes the stepper motor coils.
+  /// De-energizes the stepper motor coils.
   ///
   /// Example usage:
   /// ```
   /// tic.deenergize();
   /// ```
   ///
-  /// This function sends a Deenergize command to the Tic, causing it to disable
+  /// This function sends a De-energize command to the Tic, causing it to disable
   /// its stepper motor driver.  The motor will stop moving and consuming power.
   /// The Tic will set the "Intentionally de-energized" error bit, turn on its
   /// red LED, and drive its ERR line high.  This command also sets the
@@ -329,22 +329,22 @@ public:
     commandQuick(TicCommand::Energize);
   }
 
-  /// Sends the Exit Safe Start command.
+  /// Sends the "Exit safe start" command.
   ///
   /// Example usage:
   /// ```
   /// tic.exitSafeStart();
   /// ```
   ///
-  /// In Serial/I2C/USB control mode, this command causes the Safe Start
-  /// Violation error to be cleared for 200 ms.  If there are no other errors,
+  /// In Serial/I2C/USB control mode, this command causes the safe start
+  /// violation error to be cleared for 200 ms.  If there are no other errors,
   /// this allows the system to start up.
   void exitSafeStart()
   {
     commandQuick(TicCommand::ExitSafeStart);
   }
 
-  /// Sends the Enter Safe Start command.
+  /// Sends the "Enter safe start" command.
   ///
   /// Example usage:
   /// ```
@@ -354,7 +354,7 @@ public:
   /// This command has no effect if safe-start is disabled in the Tic's settings.
   ///
   /// In Serial/I2C/USB control mode, this command causes the Tic to stop the
-  /// motor and set its Safe Start Violation error bit.  An Exit Safe Start
+  /// motor and set its safe start violation error bit.  An "Exit safe start"
   /// command is required before the Tic will move the motor again.
   ///
   /// See the Tic user's guide for information about what this command does in
@@ -389,7 +389,7 @@ public:
   /// tic.clearDriverError();
   /// ```
   ///
-  /// This function sends a Clear Driver Error command to the Tic.  For more
+  /// This function sends a "Clear driver error" command to the Tic.  For more
   /// information, see the Tic user's guide.
   void clearDriverError()
   {
@@ -403,7 +403,7 @@ public:
   /// tic.setMaxSpeed(5550000);  // 555 steps per second
   /// ```
   ///
-  /// This function sends a Set Max Speed command to the Tic.  For more
+  /// This function sends a "Set max speed" command to the Tic.  For more
   /// information, see the Tic user's guide.
   ///
   /// See also getMaxSpeed().
@@ -419,7 +419,7 @@ public:
   /// tic.setStartingSpeed(500000);  // 50 steps per second
   /// ```
   ///
-  /// This function sends a Set Starting Speed command to the Tic.  For more
+  /// This function sends a "Set starting speed" command to the Tic.  For more
   /// information, see the Tic user's guide.
   ///
   /// See also getStartingSpeed().
@@ -436,7 +436,7 @@ public:
   /// tic.setMaxAccel(10000);  // 100 steps per second per second
   /// ```
   ///
-  /// This function sends a Set Max Acceleration command to the Tic.  For more
+  /// This function sends a "Set max acceleration" command to the Tic.  For more
   /// information, see the Tic user's guide.
   ///
   /// See also getMaxAccel().
@@ -453,7 +453,7 @@ public:
   /// tic.setMaxDecel(10000);  // 100 steps per second per second
   /// ```
   ///
-  /// This function sends a Set Max Deceleration command to the Tic.  For more
+  /// This function sends a "Set max deceleration" command to the Tic.  For more
   /// information, see the Tic user's guide.
   ///
   /// See also getMaxDecel().
@@ -470,7 +470,7 @@ public:
   /// tic.setStepMode(TicStepMode::Microstep8);
   /// ```
   ///
-  /// This function sends a Set Step Mode command to the Tic.  For more
+  /// This function sends a "Set step mode" command to the Tic.  For more
   /// information, see the Tic user's guide.
   ///
   /// See also getStepMode().
@@ -486,7 +486,7 @@ public:
   /// tic.setCurrentLimit(256);  // 256 mA
   /// ```
   ///
-  /// This function sends a Set Current Limit command to the Tic.  For more
+  /// This function sends a "Set current limit" command to the Tic.  For more
   /// information about this command and how to choose a good current limit, see
   /// the Tic user's guide.
   ///
@@ -1085,17 +1085,17 @@ public:
   /// before sending commands with this class.
   ///
   /// The `deviceNumber` argument is optional.  If it is omitted or 255, the
-  /// TicSerial object will use the Compact Protocol.  If it is a number between
-  /// 0 and 127, it specifies the device number to use in Pololu Protocol,
+  /// TicSerial object will use the compact protocol.  If it is a number between
+  /// 0 and 127, it specifies the device number to use in Pololu protocol,
   /// allowing you to control multiple Tic controllers on a single serial bus.
   ///
-  /// For example, to use the first open hardware serial port to send Compact
-  /// Protocol commands to one Tic, write this at the top of your sketch:
+  /// For example, to use the first open hardware serial port to send compact
+  /// protocol commands to one Tic, write this at the top of your sketch:
   /// ```
   /// TicSerial tic(SERIAL_PORT_HARDWARE_OPEN);
   /// ```
   ///
-  /// For example, to use a SoftwareSerial port and send Pololu Protocol
+  /// For example, to use a SoftwareSerial port and send Pololu protocol
   /// commands to two different Tic controllers, write this at the top of your sketch:
   ///
   /// ```
@@ -1143,7 +1143,7 @@ public:
   {
   }
 
-  // TODO: support Wire1 on Arduino Due?
+  // TODO: support Wire1 on Arduino Due, and bit-banging I2C on any board?
 
   /// Gets the I2C address specified in the constructor.
   uint8_t getAddress() { return _address; }

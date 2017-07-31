@@ -4,7 +4,7 @@
 //
 // The Tic's control mode must be set to "Serial/I2C/USB".  The
 // baud rate should be set to 9600 and CRC should not be enabled.
-// This example uses the Compact Protocol, so the Tic's device
+// This example uses the compact protocol, so the Tic's device
 // number is not used, and can be set to anything.
 //
 // If you have sent a De-energize command to the Tic, for example
@@ -52,7 +52,7 @@ void setup()
   tic.exitSafeStart();
 }
 
-// Sends a Reset Command Timeout command to the Tic.  We must
+// Sends a "Reset command timeout" command to the Tic.  We must
 // call this at least once per second, or else a command timeout
 // error will happen.  The Tic's default command timeout period
 // is 1000 ms, but it can be changed or disabled in the Tic

@@ -39,7 +39,7 @@ void setup()
   tic.exitSafeStart();
 }
 
-// Sends a Reset Command Timeout command to the Tic.  We must
+// Sends a "Reset command timeout" command to the Tic.  We must
 // call this at least once per second, or else a command timeout
 // error will happen.  The Tic's default command timeout period
 // is 1000 ms, but it can be changed or disabled in the Tic
