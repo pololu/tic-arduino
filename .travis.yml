@@ -6,6 +6,7 @@ cache:
 
 install:
 - pip install -U platformio
+- curl -L https://github.com/pololu/pushbutton-arduino/archive/master.tar.gz | tar xz -C /tmp
 
 env:
 - BOARD=leonardo
@@ -18,5 +19,5 @@ env:
 script:
 - set -eo pipefail;
 - for e in examples/*; do
-    platformio ci --board=$BOARD --lib=. $e/*;
+    platformio ci --board=$BOARD --lib=. --lib=/tmp/pushbutton-arduino-master $e/*;
   done
