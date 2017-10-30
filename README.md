@@ -1,14 +1,14 @@
 # Tic Stepper Motor Controller library for Arduino
 
-Version: 1.0.1<br>
-Release date: 2017-07-25<br>
+Version: 1.1.0<br>
+Release date: 2017-11-03<br>
 [![Build Status](https://travis-ci.org/pololu/tic-arduino.svg?branch=master)](https://travis-ci.org/pololu/tic-arduino)<br>
 [www.pololu.com](https://www.pololu.com/)
 
 ## Summary
 
-This is a library for the Arduino IDE that helps interface with a [Tic Stepper
-Motor Controller][tic] using serial or I&sup2;C.
+This is a library for the Arduino IDE that helps interface with a
+[Tic Stepper Motor Controller][tic] ([T825] or [T834]) using serial or I&sup2;C.
 
 ## Supported platforms
 
@@ -118,8 +118,14 @@ For complete documentation of this library, see [the tic-arduino documentation][
 [guide]: https://www.pololu.com/docs/0J71
 [ide]: https://www.arduino.cc/en/Main/Software
 [tic]: https://www.pololu.com/tic
+[T825]: https://www.pololu.com/product/3131
+[T834]: https://www.pololu.com/product/3133
 
 ## Version history
 
+* 1.1.0 (2017-11-03):
+  - Added support for the new [Tic T834][T834].
+  - Added the SerialMulti, I2CMulti, and I2CThreeButtons examples.
+  - Added keywords.txt.
 * 1.0.1 (2017-07-25): Removed the call to `haltAndSetPosition` in the `SerialSpeedControl` example because it is not necessary.
 * 1.0.0 (2017-07-24): Original release.
