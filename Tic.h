@@ -116,9 +116,27 @@ enum class TicReset
 /// See TicBase::getDecayMode() and TicBase::setDecayMode().
 enum class TicDecayMode
 {
-  Mixed  = 0,
-  Slow   = 1,
-  Fast   = 2,
+  /// This specifies "Mixed" decay mode on the Tic T825
+  /// and "Mixed 50%" on the Tic T824.
+  Mixed    = 0,
+
+  /// This specifies "Slow" decay mode.
+  Slow     = 1,
+
+  /// This specifies "Fast" decay mode.
+  Fast     = 2,
+
+  /// This is the same as TicDecayMode::Mixed, but better expresses your
+  /// intent if you want to use "Mixed 50%' mode on a Tic T834.
+  Mixed50 = 0,
+
+  /// This specifies "Mixed 25%" decay mode on the Tic T824
+  /// and is the same as TicDecayMode::Mixed on the Tic T825.
+  Mixed25 = 3,
+
+  /// This specifies "Mixed 75%" decay mode on the Tic T824
+  /// and is the same as TicDecayMode::Mixed on the Tic T825.
+  Mixed75 = 4,
 };
 
 /// This enum defines the possible step modes.
