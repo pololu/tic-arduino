@@ -1,7 +1,7 @@
 # Tic Stepper Motor Controller library for Arduino
 
 Version: 1.1.0<br>
-Release date: 2017-11-03<br>
+Release date: 2017-11-02<br>
 [![Build Status](https://travis-ci.org/pololu/tic-arduino.svg?branch=master)](https://travis-ci.org/pololu/tic-arduino)<br>
 [www.pololu.com](https://www.pololu.com/)
 
@@ -123,7 +123,7 @@ For complete documentation of this library, see [the tic-arduino documentation][
 
 ## Version history
 
-* 1.1.0 (2017-11-03):
+* 1.1.0 (2017-11-02):
   - Added support for the new [Tic T834][T834].
   - Added the SerialMulti, I2CMulti, and I2CThreeButtons examples.
   - Added keywords.txt.
