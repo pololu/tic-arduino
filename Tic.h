@@ -14,8 +14,16 @@
 #include <Stream.h>
 #include <Wire.h>
 
+enum class TicProduct
+{
+  T825 = 1,
+  T834 = 2,
+  T500 = 3,
+};
+
 /// This constant is used by the library to convert between milliamps and the
-/// Tic's native current unit, which is 32 mA.
+/// Tic's native current unit, which is 32 mA.  This is only valid for the Tic
+/// T825 and Tic T834.
 const uint8_t TicCurrentUnits = 32;
 
 /// This is used to represent a null or missing value for some of the Tic's
@@ -496,6 +504,9 @@ public:
   {
     commandW7(TicCommand::SetStepMode, (uint8_t)mode);
   }
+
+  // TODO: make a different version of this command for the Tic T500? Or make a
+  // setProduct(TicProduct) function that changes its behavior?
 
   /// Temporarily sets the stepper motor coil current limit in milliamps.
   ///
