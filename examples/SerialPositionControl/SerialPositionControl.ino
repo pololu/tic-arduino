@@ -64,8 +64,8 @@ void resetCommandTimeout()
 
 // Delays for the specified number of milliseconds while
 // resetting the Tic's command timeout so that its movement does
-// not get interrupted.
-void delayWhileMoving(uint32_t ms)
+// not get interrupted by errors.
+void delayWhileResettingCommandTimeout(uint32_t ms)
 {
   uint32_t start = millis();
   do
@@ -97,5 +97,5 @@ void loop()
   // Tell the Tic to move to position -100, and delay for 3000 ms
   // to give it time to get there.
   tic.setTargetPosition(-100);
-  delayWhileMoving(3000);
+  delayWhileResettingCommandTimeout(3000);
 }

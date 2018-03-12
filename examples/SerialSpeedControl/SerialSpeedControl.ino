@@ -48,20 +48,22 @@ void setup()
   tic.exitSafeStart();
 }
 
-// Sends a "Reset command timeout" command to the Tic.  We must
-// call this at least once per second, or else a command timeout
-// error will happen.  The Tic's default command timeout period
-// is 1000 ms, but it can be changed or disabled in the Tic
-// Control Center.
-void resetCommandTimeout()
+// Delays for the specified number of milliseconds while
+// resetting the Tic's command timeout so that its movement does
+// not get interrupted by errors.
+void delayWhileResettingCommandTimeout(uint32_t ms)
 {
-  tic.resetCommandTimeout();
+  uint32_t start = millis();
+  do
+  {
+    resetCommandTimeout();
+  } while ((uint32_t)(millis() - start) <= ms);
 }
 
 // Delays for the specified number of milliseconds while
 // resetting the Tic's command timeout so that its movement does
 // not get interrupted.
-void delayWhileMoving(uint32_t ms)
+void delayWhileResettingCommandTimeout(uint32_t ms)
 {
   uint32_t start = millis();
   do
@@ -74,17 +76,17 @@ void loop()
 {
   // Move forward at 200 steps per second for 2 seconds.
   tic.setTargetVelocity(2000000);
-  delayWhileMoving(2000);
+  delayWhileResettingCommandTimeout(2000);
 
   // Decelerate to a stop.
   tic.setTargetVelocity(0);
-  delayWhileMoving(1000);
+  delayWhileResettingCommandTimeout(1000);
 
   // Move in reverse at 100 steps per second for 1 second.
   tic.setTargetVelocity(-1000000);
-  delayWhileMoving(1000);
+  delayWhileResettingCommandTimeout(1000);
 
   // Decelerate to a stop.
   tic.setTargetVelocity(0);
-  delayWhileMoving(1000);
+  delayWhileResettingCommandTimeout(1000);
 }

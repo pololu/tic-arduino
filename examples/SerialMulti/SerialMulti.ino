@@ -45,7 +45,7 @@ void resetCommandTimeout()
   tic2.resetCommandTimeout();
 }
 
-void delayWhileMoving(uint32_t ms)
+void delayWhileResettingCommandTimeout(uint32_t ms)
 {
   uint32_t start = millis();
   do
@@ -58,17 +58,17 @@ void loop()
 {
   tic1.setTargetVelocity(2000000);
   tic2.setTargetVelocity(0);
-  delayWhileMoving(1000);
+  delayWhileResettingCommandTimeout(1000);
 
   tic1.setTargetVelocity(0);
   tic2.setTargetVelocity(1000000);
-  delayWhileMoving(1000);
+  delayWhileResettingCommandTimeout(1000);
 
   tic1.setTargetVelocity(-1000000);
   tic2.setTargetVelocity(0);
-  delayWhileMoving(1000);
+  delayWhileResettingCommandTimeout(1000);
 
   tic1.setTargetVelocity(0);
   tic2.setTargetVelocity(-2000000);
-  delayWhileMoving(1000);
+  delayWhileResettingCommandTimeout(1000);
 }
