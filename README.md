@@ -28,13 +28,13 @@ Guide][guide] is recommended.
 
 To control the Tic using I2C, you should connect your board's SCL pin to the
 Tic's SCL pin, connect your board's SDA pin to the Tic's SDA pin, and connect
-your board's GND pin to one of the Tic's GND pins.
+one of your board's GND pins to one of the Tic's GND pins.
 
 ### Serial connections
 
-To control the Tic asynchronous TTL serial, you need to at least connect your
-board's TX pin (as defined in the table below) to the Tic's RX pin, and connect
-your board's GND pin to one of the Tic's GND pins.  If you want to read
+To control the Tic using asynchronous TTL serial, you need to at least connect
+your board's TX pin (as defined in the table below) to the Tic's RX pin, and
+connect your board's GND pin to one of the Tic's GND pins.  If you want to read
 information from the Tic (as is done in this library's SerialPositionControl
 example), you must also connect your board's RX pin (as defined in the table
 below) to the Tic's TX pin.
@@ -71,8 +71,7 @@ software to apply these settings:
 
 ### Software
 
-If you are using version 1.6.2 or later of the [Arduino software (IDE)][ide],
-you can use the Library Manager to install this library:
+You can use the Library Manager to install this library:
 
 1. In the Arduino IDE, open the "Sketch" menu, select "Include Library", then
    "Manage Libraries...".
