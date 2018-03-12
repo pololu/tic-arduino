@@ -8,7 +8,8 @@ Release date: 2017-11-02<br>
 ## Summary
 
 This is a library for the Arduino IDE that helps interface with a
-[Tic Stepper Motor Controller][tic] ([T825] or [T834]) using serial or I&sup2;C.
+[Tic Stepper Motor Controller][tic] ([T825], [T834], or [T500])
+using serial or I&sup2;C.
 
 ## Supported platforms
 
@@ -119,6 +120,7 @@ For complete documentation of this library, see [the tic-arduino documentation][
 [tic]: https://www.pololu.com/tic
 [T825]: https://www.pololu.com/product/3131
 [T834]: https://www.pololu.com/product/3133
+[T500]: https://www.pololu.com/product/3135
 
 ## Version history
 
