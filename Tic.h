@@ -16,6 +16,7 @@
 
 enum class TicProduct
 {
+  Unknown = 0,
   T825 = 1,
   T834 = 2,
   T500 = 3,
@@ -223,6 +224,21 @@ enum class TicMiscFlags1
 class TicBase
 {
 public:
+  /// You can use this function to specify what type of Tic you are using.
+  ///
+  /// Example usage (pick one of the following):
+  /// ```
+  /// tic.setProduct(TicProduct::T825);
+  /// tic.setProduct(TicProduct::T834);
+  /// tic.setProduct(TicProduct::T500);
+  /// ```
+  ///
+  /// This changes the behavior of the setCurrentLimit() function.
+  void setProduct(TicProduct product)
+  {
+    this->product = product;
+  }
+
   /// Sets the target position of the Tic, in microsteps.
   ///
   /// Example usage:
@@ -508,11 +524,19 @@ public:
   // TODO: make a different version of this command for the Tic T500? Or make a
   // setProduct(TicProduct) function that changes its behavior?
 
-  /// Temporarily sets the stepper motor coil current limit in milliamps.
+  /// Temporarily sets the stepper motor coil current limit in milliamps.  If
+  /// the desired current limit is not available, this function uses the closest
+  /// current limit that is lower than the desired one.
+  ///
+  /// When converting the current limit from milliamps to a code to send to the
+  /// Tic, this function needs to know what kind of Tic you are using.  By
+  /// default, this function assumes you are using a Tic T825 or Tic T834.  If
+  /// you are using a different kind of Tic, we recommend calling setProduct()
+  /// some time before calling setCurrentLimit().
   ///
   /// Example usage:
   /// ```
-  /// tic.setCurrentLimit(256);  // 256 mA
+  /// tic.setCurrentLimit(500);  // 500 mA
   /// ```
   ///
   /// This function sends a "Set current limit" command to the Tic.  For more
@@ -520,10 +544,7 @@ public:
   /// the Tic user's guide.
   ///
   /// See also getCurrentLimit().
-  void setCurrentLimit(uint16_t limit)
-  {
-    commandW7(TicCommand::SetCurrentLimit, limit / TicCurrentUnits);
-  }
+  void setCurrentLimit(uint16_t limit);
 
   /// Temporarily sets the stepper motor driver's decay mode.
   ///
@@ -1098,6 +1119,8 @@ private:
   virtual void commandW7(TicCommand cmd, uint8_t val) = 0;
   virtual void getSegment(TicCommand cmd, uint8_t offset,
     uint8_t length, void * buffer);
+
+  TicProduct product = TicProduct::Unknown;
 };
 
 /// Represents a serial connection to a Tic.

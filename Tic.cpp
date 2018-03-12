@@ -1,6 +1,70 @@
 #include <Tic.h>
 #include <Arduino.h>
 
+static const uint16_t Tic03aCurrentTable[33] =
+{
+  0,
+  145,
+  315,
+  468,
+  608,
+  736,
+  854,
+  963,
+  1065,
+  1161,
+  1252,
+  1338,
+  1420,
+  1499,
+  1575,
+  1649,
+  1722,
+  1793,
+  1863,
+  1933,
+  2002,
+  2072,
+  2143,
+  2215,
+  2290,
+  2366,
+  2446,
+  2529,
+  2617,
+  2711,
+  2812,
+  2922,
+  3042,
+};
+
+void TicBase::setCurrentLimit(uint16_t limit)
+{
+  uint8_t code = 0;
+
+  if (product == TicProduct::T500)
+  {
+    for (uint8_t i = 0; i < 33; i++)
+    {
+      if (Tic03aCurrentTable[i] <= limit)
+      {
+        code = i;
+      }
+      else
+      {
+        break;
+      }
+    }
+  }
+  else
+  {
+    code = limit / TicCurrentUnits;
+  }
+
+  commandW7(TicCommand::SetCurrentLimit, code);
+}
+
+
 /**** TicSerial ****/
 
 void TicSerial::commandW32(TicCommand cmd, uint32_t val)
