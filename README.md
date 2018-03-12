@@ -14,8 +14,7 @@ This is a library for the Arduino IDE that helps interface with a
 
 This library is designed to work with the Arduino IDE versions 1.8.x or later;
 we have not tested it with earlier versions.  This library should support any
-Arduino-compatible board, including the [Pololu A-Star 32U4
-controllers][a-star].
+Arduino-compatible board, including the [Pololu A-Star controllers][a-star].
 
 ## Getting started
 
@@ -48,6 +47,7 @@ serial port are different depending on which Arduino you are using.
 | Microcontroller Board | Hardware serial? | MCU RX pin | MCU TX pin |
 |-----------------------|------------------|------------|------------|
 | A-Star 32U4           |        Yes       |      0     |      1     |
+| A-Star 328PB          |        Yes       |     12     |     11     |
 | Arduino Leonardo      |        Yes       |      0     |      1     |
 | Arduino Micro         |        Yes       |      0     |      1     |
 | Arduino Mega 2560     |        Yes       |     19     |     18     |
