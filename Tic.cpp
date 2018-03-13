@@ -4,38 +4,38 @@
 static const uint16_t Tic03aCurrentTable[33] =
 {
   0,
-  145,
-  315,
-  468,
-  608,
-  736,
-  854,
-  963,
-  1065,
-  1161,
-  1252,
-  1338,
-  1420,
-  1499,
-  1575,
-  1649,
-  1722,
-  1793,
-  1863,
-  1933,
-  2002,
-  2072,
-  2143,
-  2215,
-  2290,
+  1,
+  174,
+  343,
+  495,
+  634,
+  762,
+  880,
+  990,
+  1092,
+  1189,
+  1281,
+  1368,
+  1452,
+  1532,
+  1611,
+  1687,
+  1762,
+  1835,
+  1909,
+  1982,
+  2056,
+  2131,
+  2207,
+  2285,
   2366,
-  2446,
-  2529,
-  2617,
-  2711,
-  2812,
-  2922,
-  3042,
+  2451,
+  2540,
+  2634,
+  2734,
+  2843,
+  2962,
+  3093,
 };
 
 void TicBase::setCurrentLimit(uint16_t limit)
@@ -64,6 +64,19 @@ void TicBase::setCurrentLimit(uint16_t limit)
   commandW7(TicCommand::SetCurrentLimit, code);
 }
 
+uint16_t TicBase::getCurrentLimit()
+{
+  uint8_t code = getVar8(VarOffset::CurrentLimit);
+  if (product == TicProduct::T500)
+  {
+    if (code > 32) { code = 32; }
+    return Tic03aCurrentTable[code];
+  }
+  else
+  {
+    return code * TicCurrentUnits;
+  }
+}
 
 /**** TicSerial ****/
 

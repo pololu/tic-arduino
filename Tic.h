@@ -521,9 +521,6 @@ public:
     commandW7(TicCommand::SetStepMode, (uint8_t)mode);
   }
 
-  // TODO: make a different version of this command for the Tic T500? Or make a
-  // setProduct(TicProduct) function that changes its behavior?
-
   /// Temporarily sets the stepper motor coil current limit in milliamps.  If
   /// the desired current limit is not available, this function uses the closest
   /// current limit that is lower than the desired one.
@@ -945,11 +942,12 @@ public:
   /// uint16_t current = tic.getCurrentLimit();
   /// ```
   ///
+  /// By default, this function assumes you are using a Tic T825 or Tic T834.
+  /// If you are using a different kind of Tic, we recommend calling
+  /// setProduct() some time before calling getCurrentLimit().
+  ///
   /// See also setCurrentLimit().
-  uint16_t getCurrentLimit()
-  {
-    return getVar8(VarOffset::CurrentLimit) * TicCurrentUnits;
-  }
+  uint16_t getCurrentLimit();
 
   /// Gets the current decay mode of the stepper motor driver.
   ///
