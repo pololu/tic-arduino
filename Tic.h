@@ -228,9 +228,9 @@ public:
   ///
   /// Example usage (pick one of the following):
   /// ```
-  /// tic.setProduct(TicProduct::T825);
-  /// tic.setProduct(TicProduct::T834);
   /// tic.setProduct(TicProduct::T500);
+  /// tic.setProduct(TicProduct::T834);
+  /// tic.setProduct(TicProduct::T825);
   /// ```
   ///
   /// This changes the behavior of the setCurrentLimit() function.
