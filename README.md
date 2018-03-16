@@ -126,6 +126,7 @@ For complete documentation of this library, see [the tic-arduino documentation][
 
 * 1.2.0 (2018-03-16):
   - Added support for the new [Tic T500][T500].
+  - Added the I2CSetCurrentLimit example.
 * 1.1.0 (2017-11-02):
   - Added support for the new [Tic T834][T834].
   - Added the SerialMulti, I2CMulti, and I2CThreeButtons examples.
