@@ -1,7 +1,7 @@
 # Tic Stepper Motor Controller library for Arduino
 
-Version: 1.2.0<br>
-Release date: 2018-03-14<br>
+Version: 1.2.1<br>
+Release date: 2018-03-19<br>
 [![Build Status](https://travis-ci.org/pololu/tic-arduino.svg?branch=master)](https://travis-ci.org/pololu/tic-arduino)<br>
 [www.pololu.com](https://www.pololu.com/)
 
@@ -124,6 +124,8 @@ For complete documentation of this library, see [the tic-arduino documentation][
 
 ## Version history
 
+* 1.2.1 (2018-03-19):
+  - Fixed compilation errors in the SerialSpeedControl example.
 * 1.2.0 (2018-03-16):
   - Added support for the new [Tic T500][T500].
   - Added the I2CSetCurrentLimit example.
