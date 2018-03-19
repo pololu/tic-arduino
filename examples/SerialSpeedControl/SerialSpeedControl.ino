@@ -56,7 +56,7 @@ void delayWhileResettingCommandTimeout(uint32_t ms)
   uint32_t start = millis();
   do
   {
-    resetCommandTimeout();
+    tic.resetCommandTimeout();
   } while ((uint32_t)(millis() - start) <= ms);
 }
 
@@ -68,7 +68,7 @@ void delayWhileResettingCommandTimeout(uint32_t ms)
   uint32_t start = millis();
   do
   {
-    resetCommandTimeout();
+    tic.resetCommandTimeout();
   } while ((uint32_t)(millis() - start) <= ms);
 }
 
