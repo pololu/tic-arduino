@@ -60,18 +60,6 @@ void resetCommandTimeout()
 
 // Delays for the specified number of milliseconds while
 // resetting the Tic's command timeout so that its movement does
-// not get interrupted by errors.
-void delayWhileResettingCommandTimeout(uint32_t ms)
-{
-  uint32_t start = millis();
-  do
-  {
-    resetCommandTimeout();
-  } while ((uint32_t)(millis() - start) <= ms);
-}
-
-// Delays for the specified number of milliseconds while
-// resetting the Tic's command timeout so that its movement does
 // not get interrupted.
 void delayWhileResettingCommandTimeout(uint32_t ms)
 {
