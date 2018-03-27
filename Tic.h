@@ -1164,7 +1164,7 @@ public:
   uint8_t getDeviceNumber() { return _deviceNumber; }
 
 private:
-  const Stream * _stream;
+  Stream * const _stream;
   const uint8_t _deviceNumber;
 
   void commandQuick(TicCommand cmd) { sendCommandHeader(cmd); }
