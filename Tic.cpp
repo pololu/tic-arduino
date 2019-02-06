@@ -56,6 +56,10 @@ void TicBase::setCurrentLimit(uint16_t limit)
       }
     }
   }
+  else if (product == TicProduct::T249)
+  {
+    code = limit / TicT249CurrentUnits;
+  }
   else
   {
     code = limit / TicCurrentUnits;
@@ -71,6 +75,10 @@ uint16_t TicBase::getCurrentLimit()
   {
     if (code > 32) { code = 32; }
     return Tic03aCurrentTable[code];
+  }
+  else if (product == TicProduct::T249)
+  {
+    return code * TicT249CurrentUnits;
   }
   else
   {
@@ -197,7 +205,6 @@ void TicI2C::getSegment(TicCommand cmd, uint8_t offset,
   {
     _lastError = 50;
     memset(buffer, 0, length);
-    delayAfterRead();
     return;
   }
 
@@ -208,12 +215,4 @@ void TicI2C::getSegment(TicCommand cmd, uint8_t offset,
     *ptr = Wire.read();
     ptr++;
   }
-  delayAfterRead();
-}
-
-// For reliable I2C operation, the Tic requires the bus to stay idle for 2 ms
-// after any read is completed.
-void TicI2C::delayAfterRead()
-{
-  delay(2);
 }

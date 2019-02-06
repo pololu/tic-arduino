@@ -20,12 +20,17 @@ enum class TicProduct
   T825 = 1,
   T834 = 2,
   T500 = 3,
+  T249 = 4,
 };
 
 /// This constant is used by the library to convert between milliamps and the
 /// Tic's native current unit, which is 32 mA.  This is only valid for the Tic
 /// T825 and Tic T834.
 const uint8_t TicCurrentUnits = 32;
+
+/// This constant is used by the library to convert between milliamps and the
+/// Tic T249 native current unit, which is 40 mA.
+const uint8_t TicT249CurrentUnits = 40;
 
 /// This is used to represent a null or missing value for some of the Tic's
 /// 16-bit input variables.
@@ -62,6 +67,7 @@ enum class TicCommand
   SetTargetVelocity                 = 0xE3,
   HaltAndSetPosition                = 0xEC,
   HaltAndHold                       = 0x89,
+  GoHome                            = 0x97,
   ResetCommandTimeout               = 0x8C,
   Deenergize                        = 0x86,
   Energize                          = 0x85,
@@ -231,6 +237,7 @@ public:
   /// tic.setProduct(TicProduct::T500);
   /// tic.setProduct(TicProduct::T834);
   /// tic.setProduct(TicProduct::T825);
+  /// tic.setProduct(TicProduct::T249);
   /// ```
   ///
   /// This changes the behavior of the setCurrentLimit() function.
@@ -313,10 +320,30 @@ public:
   /// If the control mode is something other than Serial/I2C/USB, ths
   /// command will be silently ignored.
   ///
-  /// See also tic_deenergize().
+  /// See also deenergize().
   void haltAndHold()
   {
     commandQuick(TicCommand::HaltAndHold);
+  }
+
+  /// Tells the Tic to start its homing procedure in the reverse direction.
+  ///
+  /// See the "Homing" section of the Tic user's guide for details.
+  ///
+  /// See also goHomeForward().
+  void goHomeReverse()
+  {
+    commandW7(TicCommand::GoHome, 0);
+  }
+
+  /// Tells the Tic to start its homing procedure in the forward direction.
+  ///
+  /// See the "Homing" section of the Tic user's guide for details.
+  ///
+  /// See also goHomeReverse().
+  void goHomeForward()
+  {
+    commandW7(TicCommand::GoHome, 1);
   }
 
   /// Prevents the "Command timeout" error from happening for some time.
