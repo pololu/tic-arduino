@@ -82,6 +82,7 @@ enum class TicCommand
   SetStepMode                       = 0x94,
   SetCurrentLimit                   = 0x91,
   SetDecayMode                      = 0x92,
+  SetAgcOption                      = 0x98,
   GetVariable                       = 0xA1,
   GetVariableAndClearErrorsOccurred = 0xA2,
   GetSetting                        = 0xA8,
@@ -168,6 +169,56 @@ enum class TicStepMode
   Microstep8  = 3,
   Microstep16 = 4,
   Microstep32 = 5,
+  Microstep2_100p = 6,
+};
+
+/// This enum defines possible AGC modes.
+///
+/// See TicBase::setAgcMode() and TicBase::getAgcMode().
+enum class TicAgcMode
+{
+  Off = 0,
+  On = 1,
+  ActiveOff = 2,
+};
+
+/// This enum defines possible AGC buttom current limit percentages.
+///
+/// See TicBase::setAgcBottomCurrentLimit() and
+/// TicBase:getAgcBottomCurrentLimit().
+enum class TicAgcBottomCurrentLimit
+{
+  P45 = 0,
+  P50 = 1,
+  P55 = 2,
+  P60 = 3,
+  P65 = 4,
+  P70 = 5,
+  P75 = 6,
+  P80 = 7,
+};
+
+/// This enum defines possible AGC current boost steps values.
+///
+/// See TicBase::setAgcCurrentBoostSteps() and
+/// TicBase::getAgcCurrentBoostSteps().
+enum class TicAgcCurrentBoostSteps
+{
+  S5 = 0,
+  S7 = 1,
+  S9 = 2,
+  S11 = 3,
+};
+
+/// This enuam defines possible AGC frequency limit values.
+///
+/// See TicBase::setAgcFrequencyLimit() and TicBase::getAgcFrequencyLimit().
+enum class TicAgcFrequencyLimit
+{
+  Off = 0,
+  F225Hz = 1,
+  F450Hz = 2,
+  F675Hz = 3,
 };
 
 /// This enum defines the Tic's control pins.
@@ -220,6 +271,19 @@ enum class TicMiscFlags1
 {
   Energized = 0,
   PositionUncertain = 1,
+  ForwardLimitActive = 2,
+  ReverseLimitActive = 3,
+  HomingActive = 4,
+};
+
+/// This enum defines possible motor driver errors.
+///
+/// See TicBase::getLastMotorDriverError().
+enum class TicMotorDriverError
+{
+  None = 0,
+  OverCurrent = 1,
+  OverTemperature = 2,
 };
 
 /// This is a base class used to represent a connection to a Tic.  This class
@@ -585,6 +649,46 @@ public:
     commandW7(TicCommand::SetDecayMode, (uint8_t)mode);
   }
 
+  /// Temporarily sets the AGC mode.
+  ///
+  /// This is only valid for the Tic T249.
+  ///
+  /// See also getAgcMode().
+  void setAgcMode(TicAgcMode mode)
+  {
+    commandW7(TicCommand::SetAgcOption, (uint8_t)mode & 0xF);
+  }
+
+  /// Temporarily sets the AGC bottom current limit.
+  ///
+  /// This is only valid for the Tic T249.
+  ///
+  /// See also getAgcBottomCurrentLimit().
+  void setAgcBottomCurrentLimit(TicAgcBottomCurrentLimit limit)
+  {
+    commandW7(TicCommand::SetAgcOption, 0x10 | (uint8_t)limit & 0xF);
+  }
+
+  /// Temporarily sets the AGC current boost steps.
+  ///
+  /// This is only valid for the Tic T249.
+  ///
+  /// See also getAgcCurrentBoostSteps().
+  void setAgcCurrentBoostSteps(TicAgcCurrentBoostSteps steps)
+  {
+    commandW7(TicCommand::SetAgcOption, 0x20 | (uint8_t)steps & 0xF);
+  }
+
+  /// Temporarily sets the AGC frequency limit.
+  ///
+  /// This is only valid for the Tic T249.
+  ///
+  /// See also getAgcFrequencyLimit().
+  void setAgcFrequencyLimit(TicAgcFrequencyLimit limit)
+  {
+    commandW7(TicCommand::SetAgcOption, 0x30 | (uint8_t)limit & 0xF);
+  }
+
   /// Gets the Tic's current operation state, which indicates whether it is
   /// operating normally or in an error state.
   ///
@@ -607,7 +711,8 @@ public:
   /// its outputs).
   bool getEnergized()
   {
-    return getVar8(VarOffset::MiscFlags1) >> (uint8_t)TicMiscFlags1::Energized & 1;
+    return getVar8(VarOffset::MiscFlags1) >>
+      (uint8_t)TicMiscFlags1::Energized & 1;
   }
 
   /// Gets a flag that indicates whether there has been external confirmation that
@@ -617,7 +722,29 @@ public:
   /// guide.
   bool getPositionUncertain()
   {
-    return getVar8(VarOffset::MiscFlags1) >> (uint8_t)TicMiscFlags1::PositionUncertain & 1;
+    return getVar8(VarOffset::MiscFlags1) >>
+      (uint8_t)TicMiscFlags1::PositionUncertain & 1;
+  }
+
+  /// Returns true if one of the forward limit switches is active.
+  bool getForwardLimitActive()
+  {
+    return getVar8(VarOffset::MiscFlags1) >>
+      (uint8_t)TicMiscFlags1::ForwardLimitActive & 1;
+  }
+
+  /// Returns true if one of the reverse limit switches is active.
+  bool getReverseLimitActive()
+  {
+    return getVar8(VarOffset::MiscFlags1) >>
+      (uint8_t)TicMiscFlags1::ReverseLimitActive & 1;
+  }
+
+  /// Returns true if the Tic's homing procedure is running.
+  bool getHomingActive()
+  {
+    return getVar8(VarOffset::MiscFlags1) >>
+      (uint8_t)TicMiscFlags1::HomingActive & 1;
   }
 
   /// Gets the errors that are currently stopping the motor.
@@ -1044,6 +1171,55 @@ public:
     return getVar32(VarOffset::InputAfterScaling);
   }
 
+  /// Gets the cause of the last motor driver error.
+  ///
+  /// This is only valid for the Tic T249, and will be
+  /// TicMotorDriverError::None for other Tic models.
+  TicMotorDriverError getLastMotorDriverError()
+  {
+    return (TicMotorDriverError)getVar8(VarOffset::LastMotorDriverError);
+  }
+
+  /// Gets the AGC mode.
+  ///
+  /// This is only valid for the Tic T249.
+  ///
+  /// See also setAgcMode().
+  TicAgcMode getAgcMode()
+  {
+    return (TicAgcMode)getVar8(VarOffset::AgcMode);
+  }
+
+  /// Gets the AGC bottom current limit.
+  ///
+  /// This is only valid for the Tic T249.
+  ///
+  /// See also setAgcBottomCurrentLimit().
+  TicAgcBottomCurrentLimit getAgcBottomCurrentLimit()
+  {
+    return (TicAgcBottomCurrentLimit)getVar8(VarOffset::AgcBottomCurrentLimit);
+  }
+
+  /// Gets the AGC current boost steps.
+  ///
+  /// This is only valid for the Tic T249.
+  ///
+  /// See also setAgcCurrentBoostSteps().
+  TicAgcCurrentBoostSteps getAgcCurrentBoostSteps()
+  {
+    return (TicAgcCurrentBoostSteps)getVar8(VarOffset::AgcCurrentBoostSteps);
+  }
+
+  /// Gets the AGC frequency limit.
+  ///
+  /// This is only valid for the Tic T249.
+  ///
+  /// See also setAgcFrequencyLimit().
+  TicAgcFrequencyLimit getAgcFrequencyLimit()
+  {
+    return (TicAgcFrequencyLimit)getVar8(VarOffset::AgcFrequencyLimit);
+  }
+
   /// Gets a contiguous block of settings from the Tic's EEPROM.
   ///
   /// The maximum length that can be fetched is 15 bytes.
@@ -1057,9 +1233,7 @@ public:
   ///
   /// This library does not attempt to interpret the settings and say what they
   /// mean.  If you are interested in how the settings are encoded in the Tic's
-  /// EEPROM, see the settings code here:
-  ///
-  /// https://github.com/pololu/pololu-tic-software
+  /// EEPROM, see the "Settings reference" section of the Tic user's guide.
   void getSetting(uint8_t offset, uint8_t length, uint8_t * buffer)
   {
     getSegment(TicCommand::GetSetting, offset, length, buffer);
@@ -1113,6 +1287,11 @@ private:
     InputAfterAveraging   = 0x4D, // uint16_t
     InputAfterHysteresis  = 0x4F, // uint16_t
     InputAfterScaling     = 0x51, // uint16_t
+    LastMotorDriverError  = 0x55, // uint8_t
+    AgcMode               = 0x56, // uint8_t
+    AgcBottomCurrentLimit = 0x57, // uint8_t
+    AgcCurrentBoostSteps  = 0x58, // uint8_t
+    AgcFrequencyLimit     = 0x59, // uint8_t
   };
 
   uint8_t getVar8(uint8_t offset)
