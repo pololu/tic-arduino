@@ -41,7 +41,7 @@ example), you must also connect your board's RX pin (as defined in the table
 below) to the Tic's TX pin.
 
 The example sketches for this library use a hardware serial port on your Arduino
-if one is available: if you Arduino environment defines
+if one is available: if your Arduino environment defines
 `SERIAL_PORT_HARDWARE_OPEN`, the examples will use that port.  The pins for this
 serial port are different depending on which Arduino you are using.
 
