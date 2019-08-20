@@ -1,6 +1,13 @@
 TicCurrentUnits	KEYWORD2
 TicInputNull	KEYWORD2
 
+TicProduct	KEYWORD1
+T825	KEYWORD2
+T834	KEYWORD2
+T500	KEYWORD2
+T249	KEYWORD2
+HPSC36v4	KEYWORD2
+
 TicError	KEYWORD1
 IntentionallyDeenergized	KEYWORD2
 MotorDriverError	KEYWORD2
@@ -35,6 +42,7 @@ SetAccelMax	KEYWORD2
 SetDecelMax	KEYWORD2
 SetStepMode	KEYWORD2
 SetCurrentLimit	KEYWORD2
+SetCurrentLimitExpanded	KEYWORD2
 SetDecayMode	KEYWORD2
 GetVariable	KEYWORD2
 GetVariableAndClearErrorsOccurred	KEYWORD2
@@ -79,6 +87,37 @@ Microstep4	KEYWORD2
 Microstep8	KEYWORD2
 Microstep16	KEYWORD2
 Microstep32	KEYWORD2
+Microstep2_100p	KEYWORD2
+Microstep64	KEYWORD2
+Microstep128	KEYWORD2
+Microstep256	KEYWORD2
+
+TicAgcMode	KEYWORD1
+Off	KEYWORD2
+On	KEYWORD2
+ActiveOff	KEYWORD2
+
+TicAgcBottomCurrentLimit
+P45	KEYWORD2
+P50	KEYWORD2
+P55	KEYWORD2
+P60	KEYWORD2
+P65	KEYWORD2
+P70	KEYWORD2
+P75	KEYWORD2
+P80	KEYWORD2
+
+TicAgcCurrentBoostSteps
+S5	KEYWORD2
+S7	KEYWORD2
+S9	KEYWORD2
+S11	KEYWORD2
+
+TicAgcFrequencyLimit
+Off	KEYWORD2
+F255Hz	KEYWORD2
+F450Hz	KEYWORD2
+F675Hz	KEYWORD2
 
 TicPin	KEYWORD1
 SCL	KEYWORD2
@@ -103,12 +142,31 @@ Velocity	KEYWORD2
 TicMiscFlags1	KEYWORD1
 Energized	KEYWORD2
 PositionUncertain	KEYWORD2
+ForwardLimitActive	KEYWORD2
+ReverseLimitActive	KEYWORD2
+HomingActive	KEYWORD2
+
+TicMotorDriverError	KEYWORD1
+None	KEYWORD2
+OverCurrent	KEYWORD2
+OverTemperature	KEYWORD2
+
+TicHpscDriverError	KEYWORD1
+OverTemperature	KEYWORD2
+OverCurrentA	KEYWORD2
+OverCurrentB	KEYWORD2
+PreDriverFaultA	KEYWORD2
+PreDriverFaultB	KEYWORD2
+UnderVoltage	KEYWORD2
+Verify	KEYWORD2
 
 TicBase	KEYWORD1
 setTargetPosition	KEYWORD2
 setTargetVelocity	KEYWORD2
 haltAndSetPosition	KEYWORD2
 haltAndHold	KEYWORD2
+goHomeReverse	KEYWORD2
+goHomeForward	KEYWORD2
 resetCommandTimeout	KEYWORD2
 deenergize	KEYWORD2
 energize	KEYWORD2
@@ -123,9 +181,16 @@ setMaxDecel	KEYWORD2
 setStepMode	KEYWORD2
 setCurrentLimit	KEYWORD2
 setDecayMode	KEYWORD2
+setAgcMode	KEYWORD2
+setAgcBottomCurrentLimit	KEYWORD2
+setAgcCurrentBoostSteps	KEYWORD2
+setAgcFrequencyLimit	KEYWORD2
 getOperationState	KEYWORD2
 getEnergized	KEYWORD2
 getPositionUncertain	KEYWORD2
+getForwardLimitActive	KEYWORD2
+getReverseLimitActive	KEYWORD2
+getHomingActive	KEYWORD2
 getErrorStatus	KEYWORD2
 getErrorsOccurred	KEYWORD2
 getPlanningMode	KEYWORD2
@@ -154,6 +219,11 @@ getInputState	KEYWORD2
 getInputAfterAveraging	KEYWORD2
 getInputAfterHysteresis	KEYWORD2
 getInputAfterScaling	KEYWORD2
+getAgcMode	KEYWORD2
+getAgcBottomCurrentLimit	KEYWORD2
+getAgcCurrentBoostSteps	KEYWORD2
+getAgcFrequencyLimit	KEYWORD2
+getLastHpscDriverErrors	KEYWORD2
 getSetting	KEYWORD2
 getLastError	KEYWORD2
 

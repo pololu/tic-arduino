@@ -1,14 +1,14 @@
 # Tic Stepper Motor Controller library for Arduino
 
-Version: 2.0.0<br>
-Release date: 2019-02-06<br>
+Version: 2.1.0<br>
+Release date: 2019-08-23<br>
 [![Build Status](https://travis-ci.org/pololu/tic-arduino.svg?branch=master)](https://travis-ci.org/pololu/tic-arduino)<br>
 [www.pololu.com](https://www.pololu.com/)
 
 ## Summary
 
 This is a library for the Arduino IDE that helps interface with a
-[Tic Stepper Motor Controller][tic] ([T500], [T834], [T825], [T249])
+[Tic Stepper Motor Controller][tic] ([T500], [T834], [T825], [T249], [36v4])
 using serial or I&sup2;C.
 
 ## Supported platforms
@@ -122,9 +122,12 @@ For complete documentation of this library, see [the tic-arduino documentation][
 [T834]: https://www.pololu.com/product/3133
 [T825]: https://www.pololu.com/product/3131
 [T249]: https://www.pololu.com/product/3139
+[36v4]: https://www.pololu.com/product/3141
 
 ## Version history
 
+* 2.1.0 (2019-08-23):
+  - Added support for the new [Tic 36v4][36v4].
 * 2.0.0 (2019-02-06):
   - Removed the 2 ms delay inserted after I2C reads.  This makes the
     library incompatible with Tic firmware versions 1.00 and 1.01.

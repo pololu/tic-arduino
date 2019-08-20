@@ -31,6 +31,8 @@ void setup()
   tic.setProduct(TicProduct::T825);
   // tic.setProduct(TicProduct::T834);
   // tic.setProduct(TicProduct::T500);
+  // tic.setProduct(TicProduct::T249);
+  // tic.setProduct(TicProduct::HPSC36v4);
 
   // Set up I2C.
   Wire.begin();

@@ -21,6 +21,7 @@ enum class TicProduct
   T834 = 2,
   T500 = 3,
   T249 = 4,
+  HPSC36v4 = 5,
 };
 
 /// This constant is used by the library to convert between milliamps and the
@@ -81,6 +82,7 @@ enum class TicCommand
   SetDecelMax                       = 0xE9,
   SetStepMode                       = 0x94,
   SetCurrentLimit                   = 0x91,
+  SetCurrentLimitExpanded           = 0xC2,
   SetDecayMode                      = 0x92,
   SetAgcOption                      = 0x98,
   GetVariable                       = 0xA1,
@@ -170,6 +172,9 @@ enum class TicStepMode
   Microstep16 = 4,
   Microstep32 = 5,
   Microstep2_100p = 6,
+  Microstep64 = 7,
+  Microstep128 = 8,
+  Microstep256 = 9,
 };
 
 /// This enum defines possible AGC modes.
@@ -276,7 +281,7 @@ enum class TicMiscFlags1
   HomingActive = 4,
 };
 
-/// This enum defines possible motor driver errors.
+/// This enum defines possible motor driver errors for the Tic T249.
 ///
 /// See TicBase::getLastMotorDriverError().
 enum class TicMotorDriverError
@@ -284,6 +289,20 @@ enum class TicMotorDriverError
   None = 0,
   OverCurrent = 1,
   OverTemperature = 2,
+};
+
+/// This enum defines the bits in the "Last HPSC driver errors" variable.
+///
+/// See TicBase::getLastHpscDriverErrors().
+enum class TicHpscDriverError
+{
+  OverTemperature = 0,
+  OverCurrentA = 1,
+  OverCurrentB = 2,
+  PreDriverFaultA = 3,
+  PreDriverFaultB = 4,
+  UnderVoltage = 5,
+  Verify = 7,
 };
 
 /// This is a base class used to represent a connection to a Tic.  This class
@@ -302,6 +321,7 @@ public:
   /// tic.setProduct(TicProduct::T834);
   /// tic.setProduct(TicProduct::T825);
   /// tic.setProduct(TicProduct::T249);
+  /// tic.setProduct(TicProduct::HPSC_36v4);
   /// ```
   ///
   /// This changes the behavior of the setCurrentLimit() function.
@@ -1173,8 +1193,7 @@ public:
 
   /// Gets the cause of the last motor driver error.
   ///
-  /// This is only valid for the Tic T249, and will be
-  /// TicMotorDriverError::None for other Tic models.
+  /// This is only valid for the Tic T249.
   TicMotorDriverError getLastMotorDriverError()
   {
     return (TicMotorDriverError)getVar8(VarOffset::LastMotorDriverError);
@@ -1218,6 +1237,17 @@ public:
   TicAgcFrequencyLimit getAgcFrequencyLimit()
   {
     return (TicAgcFrequencyLimit)getVar8(VarOffset::AgcFrequencyLimit);
+  }
+
+  /// Gets the "Last HPSC driver errors" variable.
+  ///
+  /// Each bit in this register represents an error.  If the bit is 1, the
+  /// error was one of the causes of the Tic's last motor driver error.
+  ///
+  /// This is only valid for the Tic 36v4.
+  uint8_t getLastHpscDriverErrors()
+  {
+    return getVar8(VarOffset::LastHpscDriverErrors);
   }
 
   /// Gets a contiguous block of settings from the Tic's EEPROM.
@@ -1292,6 +1322,7 @@ private:
     AgcBottomCurrentLimit = 0x57, // uint8_t
     AgcCurrentBoostSteps  = 0x58, // uint8_t
     AgcFrequencyLimit     = 0x59, // uint8_t
+    LastHpscDriverErrors  = 0xFF, // uint8_t
   };
 
   uint8_t getVar8(uint8_t offset)

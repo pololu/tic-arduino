@@ -60,12 +60,32 @@ void TicBase::setCurrentLimit(uint16_t limit)
   {
     code = limit / TicT249CurrentUnits;
   }
+  else if (product == TicProduct::HPSC36v4)
+  {
+    if (limit < 36) { code = 0; }
+    else if (limit >= 9131) { code = 255; }
+    else
+    {
+      code = ((uint32_t)limit * 768 - 27500 / 2) / 27500;
+      if (code < 255 && (((uint32_t)27500 * (code + 1) + 384) / 768) <= limit)
+      {
+        code++;
+      }
+    }
+  }
   else
   {
     code = limit / TicCurrentUnits;
   }
 
-  commandW7(TicCommand::SetCurrentLimit, code);
+  if (product == TicProduct::HPSC36v4 && code >= 128)
+  {
+    commandW32(TicCommand::SetCurrentLimitExpanded, code);
+  }
+  else
+  {
+    commandW7(TicCommand::SetCurrentLimit, code);
+  }
 }
 
 uint16_t TicBase::getCurrentLimit()
@@ -79,6 +99,10 @@ uint16_t TicBase::getCurrentLimit()
   else if (product == TicProduct::T249)
   {
     return code * TicT249CurrentUnits;
+  }
+  else if (product == TicProduct::HPSC36v4)
+  {
+    return ((uint32_t)27500 * code + 384) / 768;
   }
   else
   {
@@ -121,10 +145,10 @@ void TicSerial::commandW7(TicCommand cmd, uint8_t val)
 void TicSerial::getSegment(TicCommand cmd, uint8_t offset,
   uint8_t length, void * buffer)
 {
-  length &= 0x7F;
+  length &= 0x3F;
   sendCommandHeader(cmd);
-  serialW7(offset);
-  serialW7(length);
+  serialW7(offset & 0x7F);
+  serialW7(length | (offset >> 1 & 0x40));
 
   uint8_t byteCount = _stream->readBytes((uint8_t *)buffer, length);
   if (byteCount != length)
