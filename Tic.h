@@ -21,7 +21,7 @@ enum class TicProduct
   T834 = 2,
   T500 = 3,
   T249 = 4,
-  HPSC36v4 = 5,
+  Tic36v4 = 5,
 };
 
 /// This constant is used by the library to convert between milliamps and the
@@ -291,10 +291,10 @@ enum class TicMotorDriverError
   OverTemperature = 2,
 };
 
-/// This enum defines the bits in the "Last HPSC driver errors" variable.
+/// This enum defines the bits in the "Last HP driver errors" variable.
 ///
-/// See TicBase::getLastHpscDriverErrors().
-enum class TicHpscDriverError
+/// See TicBase::getLastHpDriverErrors().
+enum class TicHpDriverError
 {
   OverTemperature = 0,
   OverCurrentA = 1,
@@ -321,7 +321,7 @@ public:
   /// tic.setProduct(TicProduct::T834);
   /// tic.setProduct(TicProduct::T825);
   /// tic.setProduct(TicProduct::T249);
-  /// tic.setProduct(TicProduct::HPSC_36v4);
+  /// tic.setProduct(TicProduct::Tic36v4);
   /// ```
   ///
   /// This changes the behavior of the setCurrentLimit() function.
@@ -1239,15 +1239,15 @@ public:
     return (TicAgcFrequencyLimit)getVar8(VarOffset::AgcFrequencyLimit);
   }
 
-  /// Gets the "Last HPSC driver errors" variable.
+  /// Gets the "Last HP driver errors" variable.
   ///
   /// Each bit in this register represents an error.  If the bit is 1, the
   /// error was one of the causes of the Tic's last motor driver error.
   ///
   /// This is only valid for the Tic 36v4.
-  uint8_t getLastHpscDriverErrors()
+  uint8_t getLastHpDriverErrors()
   {
-    return getVar8(VarOffset::LastHpscDriverErrors);
+    return getVar8(VarOffset::LastHpDriverErrors);
   }
 
   /// Gets a contiguous block of settings from the Tic's EEPROM.
@@ -1322,7 +1322,7 @@ private:
     AgcBottomCurrentLimit = 0x57, // uint8_t
     AgcCurrentBoostSteps  = 0x58, // uint8_t
     AgcFrequencyLimit     = 0x59, // uint8_t
-    LastHpscDriverErrors  = 0xFF, // uint8_t
+    LastHpDriverErrors  = 0xFF, // uint8_t
   };
 
   uint8_t getVar8(uint8_t offset)

@@ -6,7 +6,7 @@ T825	KEYWORD2
 T834	KEYWORD2
 T500	KEYWORD2
 T249	KEYWORD2
-HPSC36v4	KEYWORD2
+Tic36v4	KEYWORD2
 
 TicError	KEYWORD1
 IntentionallyDeenergized	KEYWORD2
@@ -151,7 +151,7 @@ None	KEYWORD2
 OverCurrent	KEYWORD2
 OverTemperature	KEYWORD2
 
-TicHpscDriverError	KEYWORD1
+TicHpDriverError	KEYWORD1
 OverTemperature	KEYWORD2
 OverCurrentA	KEYWORD2
 OverCurrentB	KEYWORD2
@@ -223,7 +223,7 @@ getAgcMode	KEYWORD2
 getAgcBottomCurrentLimit	KEYWORD2
 getAgcCurrentBoostSteps	KEYWORD2
 getAgcFrequencyLimit	KEYWORD2
-getLastHpscDriverErrors	KEYWORD2
+getLastHpDriverErrors	KEYWORD2
 getSetting	KEYWORD2
 getLastError	KEYWORD2
 
