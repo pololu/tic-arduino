@@ -82,7 +82,6 @@ enum class TicCommand
   SetDecelMax                       = 0xE9,
   SetStepMode                       = 0x94,
   SetCurrentLimit                   = 0x91,
-  SetCurrentLimitExpanded           = 0xC2,
   SetDecayMode                      = 0x92,
   SetAgcOption                      = 0x98,
   GetVariable                       = 0xA1,

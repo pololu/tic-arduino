@@ -62,12 +62,12 @@ void TicBase::setCurrentLimit(uint16_t limit)
   }
   else if (product == TicProduct::Tic36v4)
   {
-    if (limit < 36) { code = 0; }
-    else if (limit >= 9131) { code = 255; }
+    if (limit < 72) { code = 0; }
+    else if (limit >= 9095) { code = 127; }
     else
     {
-      code = ((uint32_t)limit * 768 - 27500 / 2) / 27500;
-      if (code < 255 && (((uint32_t)27500 * (code + 1) + 384) / 768) <= limit)
+      code = ((uint32_t)limit * 768 - 55000 / 2) / 55000;
+      if (code < 127 && (((uint32_t)55000 * (code + 1) + 384) / 768) <= limit)
       {
         code++;
       }
@@ -78,14 +78,7 @@ void TicBase::setCurrentLimit(uint16_t limit)
     code = limit / TicCurrentUnits;
   }
 
-  if (product == TicProduct::Tic36v4 && code >= 128)
-  {
-    commandW32(TicCommand::SetCurrentLimitExpanded, code);
-  }
-  else
-  {
-    commandW7(TicCommand::SetCurrentLimit, code);
-  }
+  commandW7(TicCommand::SetCurrentLimit, code);
 }
 
 uint16_t TicBase::getCurrentLimit()
@@ -102,7 +95,7 @@ uint16_t TicBase::getCurrentLimit()
   }
   else if (product == TicProduct::Tic36v4)
   {
-    return ((uint32_t)27500 * code + 384) / 768;
+    return ((uint32_t)55000 * code + 384) / 768;
   }
   else
   {
