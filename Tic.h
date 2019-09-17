@@ -1321,7 +1321,7 @@ private:
     AgcBottomCurrentLimit = 0x57, // uint8_t
     AgcCurrentBoostSteps  = 0x58, // uint8_t
     AgcFrequencyLimit     = 0x59, // uint8_t
-    LastHpDriverErrors  = 0xFF, // uint8_t
+    LastHpDriverErrors    = 0xFF, // uint8_t
   };
 
   uint8_t getVar8(uint8_t offset)
