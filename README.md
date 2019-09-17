@@ -1,7 +1,7 @@
 # Tic Stepper Motor Controller library for Arduino
 
 Version: 2.1.0<br>
-Release date: 2019-08-23<br>
+Release date: 2019-09-16<br>
 [![Build Status](https://travis-ci.org/pololu/tic-arduino.svg?branch=master)](https://travis-ci.org/pololu/tic-arduino)<br>
 [www.pololu.com](https://www.pololu.com/)
 
@@ -126,7 +126,7 @@ For complete documentation of this library, see [the tic-arduino documentation][
 
 ## Version history
 
-* 2.1.0 (2019-08-23):
+* 2.1.0 (2019-09-16):
   - Added support for the new [Tic 36v4][36v4].
 * 2.0.0 (2019-02-06):
   - Removed the 2 ms delay inserted after I2C reads.  This makes the
