@@ -685,7 +685,7 @@ public:
   /// See also getAgcBottomCurrentLimit().
   void setAgcBottomCurrentLimit(TicAgcBottomCurrentLimit limit)
   {
-    commandW7(TicCommand::SetAgcOption, 0x10 | (uint8_t)limit & 0xF);
+    commandW7(TicCommand::SetAgcOption, 0x10 | ((uint8_t)limit & 0xF));
   }
 
   /// Temporarily sets the AGC current boost steps.
@@ -695,7 +695,7 @@ public:
   /// See also getAgcCurrentBoostSteps().
   void setAgcCurrentBoostSteps(TicAgcCurrentBoostSteps steps)
   {
-    commandW7(TicCommand::SetAgcOption, 0x20 | (uint8_t)steps & 0xF);
+    commandW7(TicCommand::SetAgcOption, 0x20 | ((uint8_t)steps & 0xF));
   }
 
   /// Temporarily sets the AGC frequency limit.
@@ -705,7 +705,7 @@ public:
   /// See also getAgcFrequencyLimit().
   void setAgcFrequencyLimit(TicAgcFrequencyLimit limit)
   {
-    commandW7(TicCommand::SetAgcOption, 0x30 | (uint8_t)limit & 0xF);
+    commandW7(TicCommand::SetAgcOption, 0x30 | ((uint8_t)limit & 0xF));
   }
 
   /// Gets the Tic's current operation state, which indicates whether it is
