@@ -143,7 +143,7 @@ void TicSerial::getSegment(TicCommand cmd, uint8_t offset,
   serialW7(offset & 0x7F);
   serialW7(length | (offset >> 1 & 0x40));
 
-  uint8_t byteCount = _stream->readBytes((uint8_t *)buffer, length);
+  uint8_t byteCount = _stream->readBytes((char*)buffer, length);
   if (byteCount != length)
   {
     _lastError = 50;
