@@ -234,7 +234,7 @@ enum class TicPin
   RXPin  = 3,
   RCPin  = 4,
 
-#ifdef TIC_ARDUINO_PLAIN_PIN_NAMES
+#ifndef SCL
   SCL = SCLPin,
   SDA = SDAPin,
   TX  = TXPin,
