@@ -2,7 +2,6 @@
 
 Version: 2.1.0<br>
 Release date: 2019-09-16<br>
-[![Build Status](https://travis-ci.org/pololu/tic-arduino.svg?branch=master)](https://travis-ci.org/pololu/tic-arduino)<br>
 [www.pololu.com](https://www.pololu.com/)
 
 ## Summary
