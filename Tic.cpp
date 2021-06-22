@@ -167,7 +167,7 @@ void TicSerial::sendCommandHeader(TicCommand cmd)
   else
   {
     // Pololu protocol
-    _stream->write(0xAA);
+    _stream->write((uint8_t)0xAA);
     serialW7(_deviceNumber);
     serialW7((uint8_t)cmd);
   }
@@ -187,10 +187,10 @@ void TicI2C::commandW32(TicCommand cmd, uint32_t val)
 {
   Wire.beginTransmission(_address);
   Wire.write((uint8_t)cmd);
-  Wire.write(val >> 0); // lowest byte
-  Wire.write(val >> 8);
-  Wire.write(val >> 16);
-  Wire.write(val >> 24); // highest byte
+  Wire.write((uint8_t)(val >> 0)); // lowest byte
+  Wire.write((uint8_t)(val >> 8));
+  Wire.write((uint8_t)(val >> 16));
+  Wire.write((uint8_t)(val >> 24)); // highest byte
   _lastError = Wire.endTransmission();
 }
 
@@ -198,7 +198,7 @@ void TicI2C::commandW7(TicCommand cmd, uint8_t val)
 {
   Wire.beginTransmission(_address);
   Wire.write((uint8_t)cmd);
-  Wire.write(val & 0x7F);
+  Wire.write((uint8_t)(val & 0x7F));
   _lastError = Wire.endTransmission();
 }
 

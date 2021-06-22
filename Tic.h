@@ -1411,7 +1411,7 @@ private:
     uint8_t length, void * buffer);
 
   void sendCommandHeader(TicCommand cmd);
-  void serialW7(uint8_t val) { _stream->write(val & 0x7F); }
+  void serialW7(uint8_t val) { _stream->write((uint8_t)(val & 0x7F)); }
 };
 
 /// Represents an I2C connection to a Tic.
