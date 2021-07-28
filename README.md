@@ -75,7 +75,7 @@ You can use the Library Manager to install this library:
 
 1. In the Arduino IDE, open the "Sketch" menu, select "Include Library", then
    "Manage Libraries...".
-2. Search for "Tic".
+2. Search for "Tic Stepper Motor Controller".
 3. Click the Tic entry in the list.
 4. Click "Install".
 
