@@ -122,7 +122,7 @@ enum class TicReset
   PowerUp        = 0,
   Brownout       = 1,
   ResetLine      = 2,
-  Watchdog       = 4,
+  TicWatchdog    = 4,
   Software       = 8,
   StackOverflow  = 16,
   StackUnderflow = 32,
