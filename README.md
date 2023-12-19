@@ -1,8 +1,7 @@
 # Tic Stepper Motor Controller library for Arduino
 
-Version: 2.1.0<br>
-Release date: 2019-09-16<br>
-[![Build Status](https://travis-ci.org/pololu/tic-arduino.svg?branch=master)](https://travis-ci.org/pololu/tic-arduino)<br>
+Version: 2.1.1<br>
+Release date: 2021-06-22<br>
 [www.pololu.com](https://www.pololu.com/)
 
 ## Summary
@@ -76,7 +75,7 @@ You can use the Library Manager to install this library:
 
 1. In the Arduino IDE, open the "Sketch" menu, select "Include Library", then
    "Manage Libraries...".
-2. Search for "Tic".
+2. Search for "Tic Stepper Motor Controller".
 3. Click the Tic entry in the list.
 4. Click "Install".
 
@@ -126,6 +125,8 @@ For complete documentation of this library, see [the tic-arduino documentation][
 
 ## Version history
 
+* 2.1.1 (2021-06-22):
+  - Fixed some compilation errors and warnings.
 * 2.1.0 (2019-09-16):
   - Added support for the new [Tic 36v4][36v4].
 * 2.0.0 (2019-02-06):
