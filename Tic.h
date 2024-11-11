@@ -1425,9 +1425,9 @@ public:
   ///
   /// The `address` parameter specifies the 7-bit I2C address to use, and it
   /// must match the Tic's "Device number" setting.  It defaults to 14.
-  TicI2C(uint8_t address = 14) : _address(address)
-  {
-  }
+// In Tic.h
+TicI2C(uint8_t address = 14, TwoWire& wire_interface = Wire) 
+    : _wire(wire_interface), _address(address) {};
 
   // TODO: support Wire1 on Arduino Due, and bit-banging I2C on any board?
 
@@ -1436,6 +1436,7 @@ public:
 
 private:
   const uint8_t _address;
+  TwoWire& _wire;
 
   void commandQuick(TicCommand cmd);
   void commandW32(TicCommand cmd, uint32_t val);
