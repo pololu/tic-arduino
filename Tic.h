@@ -1423,19 +1423,51 @@ public:
   /// Creates a new TicI2C object that will use the `Wire` object to communicate
   /// with the Tic over I2C.
   ///
-  /// The `address` parameter specifies the 7-bit I2C address to use, and it
-  /// must match the Tic's "Device number" setting.  It defaults to 14.
-  TicI2C(uint8_t address = 14) : _address(address)
+  /// The optional `address` parameter specifies the 7-bit I2C address to use,
+  /// and it must match the Tic's "Device number" setting.  It defaults to 14.
+  ///
+  /// The optional `bus` parameter specifies the I2C bus to use.  You can also
+  /// set the bus with setBus().
+  TicI2C(uint8_t address = 14, TwoWire * bus = &Wire)
+    : _address(address), _bus(bus)
   {
   }
 
-  // TODO: support Wire1 on Arduino Due, and bit-banging I2C on any board?
+  /// Configures this object to use the specified I2C bus.
+  /// The default bus is Wire, which is typically the first or only I2C bus on
+  /// an Arduino.  To use Wire1 instead, you can write:
+  /// ```{.cpp}
+  /// tic.setBus(&Wire1);
+  /// ```
+  /// \param bus A pointer to a TwoWire object representing the I2C bus to use.
+  void setBus(TwoWire * bus)
+  {
+    this->_bus = bus;
+  }
 
-  /// Gets the I2C address specified in the constructor.
-  uint8_t getAddress() { return _address; }
+  /// Returns a pointer to the I2C bus that this object is configured to
+  /// use.
+  TwoWire * getBus()
+  {
+    return _bus;
+  }
+
+  /// Configures this object to use the specified 7-bit I2C address.
+  /// This must match the address that the Motoron is configured to use.
+  void setAddress(uint8_t address)
+  {
+    this->_address = address;
+  }
+
+  /// Returns the 7-bit I2C address that this object is configured to use.
+  uint8_t getAddress()
+  {
+    return _address;
+  }
 
 private:
-  const uint8_t _address;
+  uint8_t _address;
+  TwoWire * _bus;
 
   void commandQuick(TicCommand cmd);
   void commandW32(TicCommand cmd, uint32_t val);

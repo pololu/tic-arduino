@@ -1,7 +1,5 @@
 # Tic Stepper Motor Controller library for Arduino
 
-Version: 2.1.1<br>
-Release date: 2021-06-22<br>
 [www.pololu.com](https://www.pololu.com/)
 
 ## Summary
@@ -125,6 +123,9 @@ For complete documentation of this library, see [the tic-arduino documentation][
 
 ## Version history
 
+* 2.2.0 (2024-11-20):
+  - TicI2C: Added an optional parameter to the constructor to specify
+    what I2C bus to use.  Also added `setBus`, `getBus`, and `setAddress`.
 * 2.1.1 (2021-06-22):
   - Fixed some compilation errors and warnings.
 * 2.1.0 (2019-09-16):

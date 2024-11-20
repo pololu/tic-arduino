@@ -178,37 +178,37 @@ void TicSerial::sendCommandHeader(TicCommand cmd)
 
 void TicI2C::commandQuick(TicCommand cmd)
 {
-  Wire.beginTransmission(_address);
-  Wire.write((uint8_t)cmd);
-  _lastError = Wire.endTransmission();
+  _bus->beginTransmission(_address);
+  _bus->write((uint8_t)cmd);
+  _lastError = _bus->endTransmission();
 }
 
 void TicI2C::commandW32(TicCommand cmd, uint32_t val)
 {
-  Wire.beginTransmission(_address);
-  Wire.write((uint8_t)cmd);
-  Wire.write((uint8_t)(val >> 0)); // lowest byte
-  Wire.write((uint8_t)(val >> 8));
-  Wire.write((uint8_t)(val >> 16));
-  Wire.write((uint8_t)(val >> 24)); // highest byte
-  _lastError = Wire.endTransmission();
+  _bus->beginTransmission(_address);
+  _bus->write((uint8_t)cmd);
+  _bus->write((uint8_t)(val >> 0)); // lowest byte
+  _bus->write((uint8_t)(val >> 8));
+  _bus->write((uint8_t)(val >> 16));
+  _bus->write((uint8_t)(val >> 24)); // highest byte
+  _lastError = _bus->endTransmission();
 }
 
 void TicI2C::commandW7(TicCommand cmd, uint8_t val)
 {
-  Wire.beginTransmission(_address);
-  Wire.write((uint8_t)cmd);
-  Wire.write((uint8_t)(val & 0x7F));
-  _lastError = Wire.endTransmission();
+  _bus->beginTransmission(_address);
+  _bus->write((uint8_t)cmd);
+  _bus->write((uint8_t)(val & 0x7F));
+  _lastError = _bus->endTransmission();
 }
 
 void TicI2C::getSegment(TicCommand cmd, uint8_t offset,
   uint8_t length, void * buffer)
 {
-  Wire.beginTransmission(_address);
-  Wire.write((uint8_t)cmd);
-  Wire.write(offset);
-  _lastError = Wire.endTransmission(false); // no stop (repeated start)
+  _bus->beginTransmission(_address);
+  _bus->write((uint8_t)cmd);
+  _bus->write(offset);
+  _lastError = _bus->endTransmission(false); // no stop (repeated start)
   if (_lastError)
   {
     // Set the buffer bytes to 0 so the program will not use an uninitialized
@@ -217,7 +217,7 @@ void TicI2C::getSegment(TicCommand cmd, uint8_t offset,
     return;
   }
 
-  uint8_t byteCount = Wire.requestFrom(_address, (uint8_t)length);
+  uint8_t byteCount = _bus->requestFrom(_address, (uint8_t)length);
   if (byteCount != length)
   {
     _lastError = 50;
@@ -229,7 +229,7 @@ void TicI2C::getSegment(TicCommand cmd, uint8_t offset,
   uint8_t * ptr = (uint8_t *)buffer;
   for (uint8_t i = 0; i < length; i++)
   {
-    *ptr = Wire.read();
+    *ptr = _bus->read();
     ptr++;
   }
 }
