@@ -122,7 +122,7 @@ enum class TicReset
   PowerUp        = 0,
   Brownout       = 1,
   ResetLine      = 2,
-  Watchdog       = 4,
+  TicWatchdog    = 4,
   Software       = 8,
   StackOverflow  = 16,
   StackUnderflow = 32,
@@ -228,11 +228,19 @@ enum class TicAgcFrequencyLimit
 /// This enum defines the Tic's control pins.
 enum class TicPin
 {
-  SCL = 0,
-  SDA = 1,
-  TX  = 2,
-  RX  = 3,
-  RC  = 4,
+  SCLPin = 0,
+  SDAPin = 1,
+  TXPin  = 2,
+  RXPin  = 3,
+  RCPin  = 4,
+
+#ifndef SCL
+  SCL = SCLPin,
+  SDA = SDAPin,
+  TX  = TXPin,
+  RX  = RXPin,
+  RC  = RCPin,
+#endif
 };
 
 /// This enum defines the Tic's pin states.
@@ -1043,7 +1051,7 @@ public:
   ///
   /// Example usage:
   /// ```
-  /// uint16_t reading = getAnalogReading(TicPin::SDA);
+  /// uint16_t reading = getAnalogReading(TicPin::SDAPin);
   /// if (reading != TicInputNull && reading < 32768)
   /// {
   ///   // The reading is less than about 2.4 V.
@@ -1061,7 +1069,7 @@ public:
   ///
   /// Example usage:
   /// ```
-  /// if (tic.getDigitalReading(TicPin::RC))
+  /// if (tic.getDigitalReading(TicPin::RCPin))
   /// {
   ///   // Something is driving the RC pin high.
   /// }
@@ -1080,7 +1088,7 @@ public:
   /// Example usage:
   ///
   /// ```
-  /// if (tic.getPinState(TicPin::SCL) == TicPinState::OutputHigh)
+  /// if (tic.getPinState(TicPin::SCLPin) == TicPinState::OutputHigh)
   /// {
   ///   // SCL is driving high.
   /// }
